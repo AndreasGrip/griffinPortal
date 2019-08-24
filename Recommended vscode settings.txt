@@ -1,0 +1,13 @@
+https://www.slightedgecoder.com/2018/01/18/formatting-ejs-file-vs-code-visual-studio-code/
+
+Node.js Extension Pack
+Bracket Pair Colorizer 2
+Auto Renamee Tag
+Beautify
+CSS Formater
+EJS language support
+GitLens
+MySQL Syntax
+Mysql
+Path Intellisense
+Prettier

@@ -1,0 +1,380 @@
+<!-- Note to self as of 2019-05-19 AGR, This is absolutly horrible code PLEASE PLEASE clean it up, -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>
+      Användar Administration
+      <small>Control panel</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li>
+        <a href="../search/"><i class="fa fa-dashboard"></i> Home</a>
+      </li>
+      <li class="active"><i class="fa fa-user-circle"></i> Access Administration</li>
+    </ol>
+  </section>
+
+  <div class="modal fade" id="addForm" tabindex="-1" role="dialog" aria-labelledby="addLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h4 class="modal-title w-100 font-weight-bold">Add</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body mx-3" id="addFormContent">
+          <!-- Content will go here -->
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button class="btn btn-primary" onclick="addSave();">Add</button>
+          <button class="btn btn-danger" data-toggle="modal" data-target="#addForm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <a href="" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#addForm">Add</a>
+  </div>
+
+  <div class="modal" id="waitSpinner" tabindex="-1" role="dialog" aria-labelledby="waitSpinnerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="waitSpinnerTitle"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <rs class="modal-body hcenter">
+          <div class="loader"></div>
+        </rs>
+        <div class="modal-footer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <!-- Main row -->
+    <div class="row">
+      <!-- Left col -->
+      <div id="tableContainer"></div>
+      <!-- /.Left col -->
+    </div>
+    <!-- /.row (main row) -->
+  </section>
+</div>
+
+<script type="text/javascript">
+  $(function() {
+    listUpdate();
+  });
+  let tableConfig = {
+    id: {
+      label: 'Id'
+    },
+    name: {
+      editable: true,
+      validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{3,44}$/',
+      icon: 'fa-user-circle',
+      addNew: true
+    },
+    description: {
+      editable: true,
+      icon: 'fa-info-circle',
+      addNew: true
+    },
+    URL: {
+      validation: '/^[\/a-zA-Z0-9]{1,100}$/',
+      editable: true,
+      icon: 'fa-sitemap',
+      addNew: true
+    },
+    type: {
+      label: 'GET/DELETE/EDIT',
+      editable: true,
+      icon: 'fa-magic',
+      addNew: true
+    },
+    delete: {
+      function: 'del({id})',
+      content: 'button(Del,danger)'
+    },
+    icon: {
+      editable: true
+    },
+    sortorder: {
+      editable: true,
+      validation: '/^\\d+$/'
+    }
+  };
+
+  function addContentUpdate() {
+    let respons = '';
+    for (let key of Object.keys(tableConfig)) {
+      if (tableConfig[key].addNew) {
+        //        <div class="modal-body mx-3" id="addFormContent">
+        respons += '<div class="md-form mb-5">';
+        if (tableConfig[key].icon) {
+          respons += '<i class="fa ' + tableConfig[key].icon + 'prefix grey-text"></i>';
+        }
+        respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
+        respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
+        respons += '</div>';
+      }
+    }
+    $('#addFormContent').append(respons);
+  }
+
+  function listUpdate() {
+    $.ajax({
+      url: 'get',
+      type: 'GET',
+      dataType: 'json'
+    }).done(dataObj => {
+      //Clear the container if there is anything there
+      $('#tableContainer').empty();
+      //Make sure that the dataobject is not empty.
+      let columns = 0;
+      let editable = [];
+      if (dataObj.length > 0) {
+        respond = '<table class="table table-bordered" id="list">';
+        respond += '<thead><tr>';
+        //For each resultset...
+        for (let i = 0; i < Object.keys(dataObj[0]).length; i++) {
+          //If there was no configuration for this column create one
+          if (tableConfig[Object.keys(dataObj[0])[i]] === undefined) {
+            tableConfig[Object.keys(dataObj[0])[i]];
+          }
+          //save the column number
+          tableConfig[Object.keys(dataObj[0])[i]].column = i;
+          columns = i;
+          //If no label is defined, use the column name as label
+          if (tableConfig[Object.keys(dataObj[0])[i]].label === undefined) {
+            tableConfig[Object.keys(dataObj[0])[i]].label = Object.keys(dataObj[0])[i];
+          }
+          respond += '<th>' + tableConfig[Object.keys(dataObj[0])[i]].label + '</th>';
+        }
+
+        for (let key of Object.keys(tableConfig)) {
+          if (tableConfig[key].column === undefined || tableConfig[key].extra) {
+            if (tableConfig[key].column === undefined) {
+              tableConfig[key].column = ++columns;
+              tableConfig[key].extra = true;
+            }
+            //If no label is defined, use the column name as label
+            if (tableConfig[key].label === undefined) {
+              tableConfig[key].label = key;
+            }
+            respond += '<th>' + tableConfig[key].label + '</th>';
+          }
+          if (tableConfig[key].editable) {
+            editable.push(tableConfig[key].column);
+          }
+        }
+
+        respond += '</tr></thead>';
+        respond += '<tbody>';
+        for (let i = 0; i < dataObj.length; i++) {
+          let rowArray = {};
+          respond += '<tr>';
+          for (let i2 = 0; i2 < Object.keys(dataObj[i]).length; i2++) {
+            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
+            rowArray[Object.keys(dataObj[i])[i2]] = dataObj[i][Object.keys(dataObj[i])[i2]];
+          }
+          for (let key of Object.keys(tableConfig)) {
+            if (tableConfig[key].extra) {
+              let tmp_function = tableConfig[key].function;
+              respond += '<td>';
+              //create function string
+              if (tmp_function) {
+                replaceables = tmp_function.match(/\{(\w*)\}/);
+                for (let arg of replaceables) {
+                  tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
+                }
+                //console.log(replaceables);
+              }
+
+              switch (true) {
+                case /^button\(.*\)/.test(tableConfig[key].content):
+                  let contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
+                  console.log(contentArray);
+                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
+                  break;
+                /*
+                    content: 'button(\'Del\',\'Delete\',\'primary\')'
+                  */
+                default:
+              }
+              respond += '</td>';
+            }
+          }
+          respond += '</tr>';
+        }
+        respond += '</tbody>';
+        respond += '</table>';
+        $('#tableContainer').append(respond);
+        /*
+          let table = $("#list").DataTable({
+            paging: false
+          });
+
+          table.MakeCellsEditable({
+            "onUpdate": tableUpdate,
+            "columns": editable,
+            "allowNulls": false,
+            "confirmationButton": true,
+            "onValidate": tableValidate
+          });
+          */
+      } else {
+        respond = 'cant load List';
+        $('#tableContainer').append(respond);
+      }
+      addContentUpdate();
+    });
+  }
+
+  function uiBtnCreate(label, functionString, type) {
+    console.log('a');
+    switch (type) {
+      case 'default':
+      case 'primary':
+      case 'success':
+      case 'info':
+      case 'warning':
+      case 'danger':
+      case 'link':
+        break;
+      default:
+        type = 'default';
+    }
+    let returnString = '<button class="btn btn-' + type + ' btn-rounded mb-4" onClick="' + functionString + '">' + label + '</button>';
+    return returnString;
+  }
+
+  function del(id) {
+    $('#waitSpinner').modal();
+    $.ajax({
+      url: 'del',
+      type: 'GET',
+      data: {
+        id: id
+      }
+    })
+      .done(data => {
+        if (JSON.parse(data).result !== 'Ok') {
+          alert(JSON.stringify(data));
+        }
+        console.log('Done delete id:' + id);
+        listUpdate();
+        $('#waitSpinner').modal('hide');
+      })
+      .fail(() => {
+        $('#waitSpinner').modal('hide');
+        alert('Fail');
+      })
+      .always(() => {
+        $('#waitSpinner').modal('hide');
+        console.log('Final delete id:' + id);
+      });
+  }
+
+  function addSave() {
+    let addData = {};
+    for (let key of Object.keys(tableConfig)) {
+      if (tableConfig[key].addNew) {
+        if (tableConfig[key].validation) {
+          var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
+          var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
+          var regex = new RegExp(pattern, flags);
+          if (regex.test($('#add-' + key)[0].value) !== true) {
+            return 1;
+          }
+        }
+        addData[key] = $('#add-' + key)[0].value;
+      }
+    }
+
+    $('#waitSpinner').modal();
+    $.ajax({
+      url: 'add',
+      type: 'GET',
+      data: addData
+    })
+      .done(data => {
+        if (JSON.parse(data).result !== 'Ok') {
+          alert(data);
+        }
+        console.log(data);
+        $('#waitSpinner').modal('hide');
+        $('#addForm').modal('hide');
+        listUpdate();
+      })
+      .fail(() => {
+        $('#waitSpinner').modal('hide');
+        alert('Fail');
+      })
+      .always(() => {
+        $('#waitSpinner').modal('hide');
+        console.log('Complete');
+      });
+  }
+
+  function tableUpdate(updatedCell, updatedRow, oldValue) {
+    $('#waitSpinner').modal();
+    let valueToChange;
+
+    for (let key of Object.keys(tableConfig)) {
+      if (tableConfig[key].column === updatedCell.index().column) {
+        valueToChange = key;
+        break;
+      }
+    }
+    if (!valueToChange) {
+      alert("Can't update " + valueToChange);
+      return false;
+    }
+
+    $.ajax({
+      url: 'set',
+      type: 'GET',
+      data: {
+        id: updatedRow.data()[tableConfig.id.column],
+        valueToChange: valueToChange,
+        newValue: updatedCell.data()
+      }
+    })
+      .done(data => {
+        console.log(data);
+        if (JSON.parse(data).result !== 'Ok') {
+          alert(data);
+        }
+      })
+      .fail(data => {
+        console.log('data :', data);
+        alert('Fail');
+      })
+      .always(() => {
+        $('#waitSpinner').modal('hide');
+        listUpdate();
+        console.log('Complete');
+      });
+  }
+
+  function tableValidate(updatedCell, updatedRow, newValue) {
+    for (let key of Object.keys(tableConfig)) {
+      if (tableConfig[key].column == updatedCell.index().column) {
+        if (tableConfig[key].validation) {
+          var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
+          var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
+          var regex = new RegExp(pattern, flags);
+          return regex.test(newValue);
+        }
+      }
+    }
+    return true;
+  }
+</script>
