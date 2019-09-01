@@ -57,8 +57,9 @@ app.use('/userAdmin/', userAdminRouter);
 app.use('/userAccess/', userAccessRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 // AGR start
-app.use(express.static(path.join(__dirname, 'public', 'AdminLTE')));
-app.use(express.static(path.join(__dirname, 'node_modules', 'admin-lte')));
+//app.use(express.static(path.join(__dirname, 'public', 'AdminLTE')));
+//app.use(express.static(path.join(__dirname, 'node_modules', 'admin-lte')));
+app.use(express.static(path.join('public', 'bower_components','admin-lte')));
 // AGR end
 
 // catch 404 and forward to error handler

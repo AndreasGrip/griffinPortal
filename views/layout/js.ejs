@@ -1,6 +1,8 @@
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
-  $.widget.bridge('uibutton', $.ui.button);
+  if ($.ui) {
+    $.widget.bridge('uibutton', $.ui.button);
+  }
 </script>
 <!-- Bootstrap 3.3.7 -->
 <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -31,3 +33,5 @@
 <script src="../dist/js/pages/dashboard.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="../dist/js/demo.js"></script>
+<!-- multiselect dropdown -->
+<script src="../bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
