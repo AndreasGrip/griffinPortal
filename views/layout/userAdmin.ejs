@@ -48,8 +48,24 @@
 </div>
 
 <script type="text/javascript">
-  $(function() {
-    listUpdate();
+  $(function () {
+    window.adminLTE = {};
+    $.ajax({
+      url: 'getallaccess',
+      type: 'GET',
+      dataType: 'json'
+    })
+      .done(data => {
+        window.adminLTE.allAccess = data;
+      })
+      .fail(data => {
+        alert('failed to get access levels');
+        console.log('failed to get access levels');
+        console.log(data);
+      })
+      .always(() => {
+        listUpdate();
+      });
   });
 
   let changeId = 0;
@@ -96,14 +112,14 @@
       addNew: true
     },
     firstName: {
-      lable: 'FirstName',
+      label: 'FirstName',
       editable: true,
       validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
       icon: 'fa-user-circle',
       addNew: true
     },
     lastName: {
-      lable: 'LastMail',
+      label: 'LastMail',
       editable: true,
       validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
       icon: 'fa-user-circle',
@@ -113,19 +129,25 @@
       label: 'Email',
       editable: true,
       validation:
-        '/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/',
+        '/[^@]+@[^\.]+\..+/',
       icon: 'fa-envelope ',
       addNew: true
     },
+    access: {
+      label: 'Access',
+      icon: 'fa-handshake-o',
+      content: 'multiselect({access},allAccess)'
+    },
     password: {
       label: 'Password',
-      validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+      validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{3,44}$/',
       icon: 'fa-key',
       addNew: true,
       content: 'button(ChangePassword,danger)',
       function: 'changepasswordShow({id})'
     },
     delete: {
+      label: 'Delete',
       function: 'del({id})',
       content: 'button(Del,danger)'
     }
@@ -237,36 +259,60 @@
         for (let i = 0; i < dataObj.length; i++) {
           let rowArray = {};
           respond += '<tr>';
+          //Add all data we fetched from DB
           for (let i2 = 0; i2 < Object.keys(dataObj[i]).length; i2++) {
-            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
+//            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
             rowArray[Object.keys(dataObj[i])[i2]] = dataObj[i][Object.keys(dataObj[i])[i2]];
           }
+          console.log(rowArray);
           for (let key of Object.keys(tableConfig)) {
-            if (tableConfig[key].extra) {
+            if (tableConfig[key].extra || true) {
+ //             respond += '<td>';
+              //Just make sure the space key get some value.
+              if (!rowArray[key]) {
+                rowArray[key] = '';
+              } ;
               let tmp_function = tableConfig[key].function;
-              respond += '<td>';
               //create function string
               if (tmp_function) {
-                replaceables = tmp_function.match(/\{(\w*)\}/);
-                for (let arg of replaceables) {
-                  tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
+                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
+                if (replaceables = tmp_function.match(/\{(\w*)\}/)) {
+                  for (let arg of replaceables) {
+                    tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
+                  }
                 }
-                //console.log(replaceables);
+              }
+              let tmp_content = tableConfig[key].content;
+              if (tmp_content) {
+                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
+                if (replaceables = tmp_content.match(/\{(\w*)\}/)) {
+                  for (let arg of replaceables) {
+                    tmp_content = tmp_content.replace('{' + arg + '}', dataObj[i][arg]);
+                  }
+                }
               }
 
+              let contentArray = [];
               switch (true) {
                 case /^button\(.*\)/.test(tableConfig[key].content):
-                  let contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
-                  console.log(contentArray);
-                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
+                  contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
+                  rowArray[key] = uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
+//                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
                   break;
-                /*
-                    content: 'button(\'Del\',\'Delete\',\'primary\')'
-                  */
+                case /^multiselect\(.*\)/.test(tableConfig[key].content):
+                  //contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
+                  let tmp_selected = tmp_content.match(/^multiselect\(\[(.*)\]/)[1].split(',');
+                  rowArray[key] = uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
+//                  respond += uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
+                  break;
+
                 default:
               }
-              respond += '</td>';
+//              respond += '</td>';
             }
+          }
+          for(let key in rowArray) {
+            respond += '<td>' + rowArray[key] + '</td>';
           }
           respond += '</tr>';
         }
@@ -291,8 +337,8 @@
       }
       //  addContentUpdate();
       let okButtonConfig = {};
-      okButtonConfig.function = 'addSave()';
       okButtonConfig.label = 'Add';
+      okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
       createPopupInput('Add', tableConfig, okButtonConfig);
 
       okButtonConfig.function = 'changePassword()';
@@ -306,11 +352,59 @@
         }
       };
       createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+      $(".multiselect").multiselect({
+        onChange: (option, checked, select) => {
+          console.log($(option).val());
+          console.log(checked);
+          console.log(select);
+          let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
+          let optionToChange = $(option).val();
+          let valueSet = checked;
+          console.log(optionToChange + ' ' + valueSet + ' ' + userId);
+          $.ajax({
+            url: 'setUserAccess',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+              userid: userId,
+              accesstochange: optionToChange,
+              state: valueSet
+            }
+          })
+        }
+      });
     });
+   
+  }
+
+  function uiMSelCreate(selected, allObjects) {
+    //Create object with all available objects
+    let objectList = {};
+    for (let val in allObjects) {
+      objectList[allObjects[val].name] = false;
+    }
+    for (let val of selected) {
+      objectList[val] = true;
+    }
+    let returnString = '<select id=multiselect class=multiselect multiple=multiple>';
+    for (let key of Object.keys(objectList)) {
+      if (objectList[key]) {
+        returnString += '<option selected>';
+      } else {
+        returnString += '<option>';
+      }
+      returnString += key;
+      returnString += '</option>';
+    }
+    returnString += '</select>';
+    console.log('selected');
+    console.log(selected);
+    console.log('allObjects');
+    console.log(allObjects);
+    return returnString;
   }
 
   function uiBtnCreate(label, functionString, type) {
-    console.log('a');
     switch (type) {
       case 'default':
       case 'primary':
@@ -338,24 +432,22 @@
       }
     })
       .done(data => {
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(JSON.stringify(data));
         }
-        console.log('Done delete id:' + id);
         listUpdate();
         $('#waitSpinner').modal('hide');
       })
       .fail(() => {
         $('#waitSpinner').modal('hide');
-        alert('Fail');
+        alert('Fail to delete user');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
-        console.log('Final delete id:' + id);
       });
   }
 
-  function addSave() {
+  function addSave(label) {
     let addData = {};
     for (let key of Object.keys(tableConfig)) {
       if (tableConfig[key].addNew) {
@@ -363,11 +455,12 @@
           var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
           var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
           var regex = new RegExp(pattern, flags);
-          if (regex.test($('#add-' + key)[0].value) !== true) {
+          if (regex.test($('#' + label + '-' + key)[0].value) !== true) {
+            alert(key + ' ' + 'must patch regex ' + pattern);
             return 1;
           }
         }
-        addData[key] = $('#add-' + key)[0].value;
+        addData[key] = $('#' + label + '-' + key)[0].value;
       }
     }
 
@@ -378,21 +471,19 @@
       data: addData
     })
       .done(data => {
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(data);
         }
-        console.log(data);
         $('#waitSpinner').modal('hide');
         $('#AddForm').modal('hide');
         listUpdate();
       })
       .fail(() => {
         $('#waitSpinner').modal('hide');
-        alert('Fail');
+        alert('Fail to add user');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
-        console.log('Complete');
       });
   }
 
@@ -421,19 +512,16 @@
       }
     })
       .done(data => {
-        console.log(data);
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(data);
         }
       })
       .fail(data => {
-        console.log('data :', data);
-        alert('Fail');
+        alert('Fail to change user');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
         listUpdate();
-        console.log('Complete');
       });
   }
 

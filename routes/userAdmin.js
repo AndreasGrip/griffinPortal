@@ -13,7 +13,14 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/get', (req, res, next) => {
-  const sql = "select id, ifnull(userName,'') userName, firstName, lastName, email FROM " + mysqlConf.database + dbTable + ' where deactivated is null';
+  //const sql = "select id, ifnull(userName,'') userName, firstName, lastName, email FROM " + mysqlConf.database + dbTable + ' where deactivated is null';
+  // eslint-disable-next-line no-multi-str
+  const sql = `select u.id, ifnull(u.userName,'') userName, u.firstName, u.lastName, u.email, concat('[', ifnull(group_concat(ua.name),''), ']') as access \
+      FROM ${mysqlConf.database}${dbTable} u \
+      left join ${mysqlConf.database}.user_useraccess uua on u.id = uua.userid \
+      left join ${mysqlConf.database}.useraccess ua on ua.id = uua.useraccessid \
+      where u.deactivated is null
+      group by u.id`;
 
   db.query(sql)
     .then(data => {
@@ -25,6 +32,54 @@ router.get('/get', (req, res, next) => {
         message: err.message
       });
     });
+});
+
+router.get('/getallaccess', (req, res, next) => {
+  const sql = 'select id, name from ' + mysqlConf.database + '.useraccess where deactivated is null order by name ';
+  db.query(sql)
+    .then(data => {
+      res.json(data[0]);
+    })
+    .catch(err => {
+      res.json({
+        result: 'Error',
+        message: err.message
+      });
+    });
+});
+
+router.get('/setUserAccess', (req, res, next) => {
+  if (req.query.userid === undefined || req.query.accesstochange === undefined || req.query.state === undefined) {
+    return 1;
+  }
+  let sql = '';
+  if (req.query.state === "true") {
+    sql = 'insert into ' + mysqlConf.database + '.user_useraccess (userid, useraccessid) \
+    select ' + db.escape(req.query.userid) + ',id from ' + mysqlConf.database + '.useraccess where name = ' + db.escape(req.query.accesstochange);
+    ;
+  } else {
+    sql =
+      'delete uua from user_useraccess uua \
+    join useraccess ua on uua.useraccessid = ua.id \
+    where uua.userid = ' +
+      db.escape(req.query.userid) +
+      ' \
+    and ua.name = ' +
+      db.escape(req.query.accesstochange);
+  }
+
+  db.query(sql)
+  .then(() => {
+    res.json({
+      result: 'Ok'
+    });
+  })
+  .catch(err => {
+    res.json({
+      result: 'Error',
+      message: err.message
+    });
+  });
 });
 
 router.get('/set', (req, res, next) => {
