@@ -106,7 +106,6 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
     }
     if (req.session.access[url.path]) {
       if (req.session.access[url.path] === 'ALL') {
-        console.log('test');
         next();
       } else {
         for (const type of req.session.access[url.path].split(',')) {
