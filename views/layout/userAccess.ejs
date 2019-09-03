@@ -14,28 +14,8 @@
     </ol>
   </section>
 
-  <div class="modal fade" id="addForm" tabindex="-1" role="dialog" aria-labelledby="addLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header text-center">
-          <h4 class="modal-title w-100 font-weight-bold">Add</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body mx-3" id="addFormContent">
-          <!-- Content will go here -->
-        </div>
-        <div class="modal-footer d-flex justify-content-center">
-          <button class="btn btn-primary" onclick="addSave();">Add</button>
-          <button class="btn btn-danger" data-toggle="modal" data-target="#addForm">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="text-center">
-    <a href="" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#addForm">Add</a>
+    <a href="" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#AddForm">Add</a>
   </div>
 
   <div class="modal" id="waitSpinner" tabindex="-1" role="dialog" aria-labelledby="waitSpinnerTitle" aria-hidden="true">
@@ -83,6 +63,7 @@
     },
     description: {
       editable: true,
+      validation: '/^[\/a-zA-Z0-9]{3,100}$/',
       icon: 'fa-info-circle',
       addNew: true
     },
@@ -93,23 +74,68 @@
       addNew: true
     },
     type: {
-      label: 'GET/DELETE/EDIT',
+      label: 'Subpages',
+      validation: '/^[\/_a-zA-Z0-9]{1,100}$/',
       editable: true,
       icon: 'fa-magic',
+      addNew: true
+    },
+    icon: {
+      label: 'Icon',
+      validation: '/^[\-\_a-zA-Z0-9]{1,100}$/',
+      editable: true,
+      icon: 'fa-info',
+      addNew: true,
+    },
+    sortorder: {
+      lable: 'SortOrder',
+      editable: true,
+      validation: '/^\\d+$/',
+      icon: 'fa-sort-alpha-asc',
       addNew: true
     },
     delete: {
       function: 'del({id})',
       content: 'button(Del,danger)'
-    },
-    icon: {
-      editable: true
-    },
-    sortorder: {
-      editable: true,
-      validation: '/^\\d+$/'
     }
   };
+
+  function createPopupInput(label, config, okButtonConfig) {
+    let result = '';
+    result += '<div class="modal fade" id="' + label + 'Form" tabindex="-1" role="dialog" aria-labelledby="' + label + 'Label" aria-hidden="true">';
+    result += '<div class="modal-dialog" role="document">';
+    result += '<div class="modal-content">';
+    result += '<div class="modal-header text-center">';
+    result += '<h4 class="modal-title w-100 font-weight-bold">' + label + '</h4>';
+    result += '<button type="button" class="close" data-dismiss="modal" aria-label="Close">';
+    result += '<span aria-hidden="true">&times;</span>';
+    result += '</button>';
+    result += '</div>';
+    result += '<div class="modal-body mx-3" id="' + label + 'FormContent">';
+    result += '<!-- Content will go here -->';
+
+    for (let key of Object.keys(config)) {
+      if (config[key].addNew) {
+        result += '<div class="md-form mb-5">';
+        if (config[key].icon) {
+          result += '<i class="fa ' + config[key].icon + ' prefix grey-text"></i>';
+        }
+        result += '<label data-error="wrong" data-success="right" for="' + label + '-' + key + '">' + config[key].label + '</label>';
+        result += '<input type="' + key + '" id="' + label + '-' + key + '" class="form-control validate">';
+        result += '</div>';
+      }
+    }
+
+    result += '</div>';
+    result += '<div class="modal-footer d-flex justify-content-center">';
+    result += '<button class="btn btn-primary" onclick="' + okButtonConfig.function + ';">' + okButtonConfig.label + '</button>';
+    result += '<button class="btn btn-danger" data-toggle="modal" data-target="#' + label + 'Form">Cancel</button>';
+    result += '</div>';
+    result += '</div>';
+    result += '</div>';
+    result += '</div>';
+    $(result).appendTo($('.content-wrapper')[0]);
+  }
 
   function addContentUpdate() {
     let respons = '';
@@ -118,14 +144,14 @@
         //        <div class="modal-body mx-3" id="addFormContent">
         respons += '<div class="md-form mb-5">';
         if (tableConfig[key].icon) {
-          respons += '<i class="fa ' + tableConfig[key].icon + 'prefix grey-text"></i>';
+          respons += '<i class="fa ' + tableConfig[key].icon + ' prefix grey-text"></i>';
         }
         respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
         respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
         respons += '</div>';
       }
     }
-    $('#addFormContent').append(respons);
+    $('#AddFormContent').innerHTML(respons);
   }
 
   function listUpdate() {
@@ -146,7 +172,7 @@
         for (let i = 0; i < Object.keys(dataObj[0]).length; i++) {
           //If there was no configuration for this column create one
           if (tableConfig[Object.keys(dataObj[0])[i]] === undefined) {
-            tableConfig[Object.keys(dataObj[0])[i]];
+            tableConfig[Object.keys(dataObj[0])[i]] = {};
           }
           //save the column number
           tableConfig[Object.keys(dataObj[0])[i]].column = i;
@@ -181,60 +207,113 @@
           let rowArray = {};
           respond += '<tr>';
           for (let i2 = 0; i2 < Object.keys(dataObj[i]).length; i2++) {
-            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
+//            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
             rowArray[Object.keys(dataObj[i])[i2]] = dataObj[i][Object.keys(dataObj[i])[i2]];
           }
           for (let key of Object.keys(tableConfig)) {
-            if (tableConfig[key].extra) {
+            if (tableConfig[key].extra || true) {
+ //             respond += '<td>';
+              //Just make sure the space key get some value.
+              if (!rowArray[key]) {
+                rowArray[key] = '';
+              } ;
               let tmp_function = tableConfig[key].function;
-              respond += '<td>';
               //create function string
               if (tmp_function) {
-                replaceables = tmp_function.match(/\{(\w*)\}/);
+                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
+                if (replaceables = tmp_function.match(/\{(\w*)\}/)) {
                 for (let arg of replaceables) {
                   tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
                 }
-                //console.log(replaceables);
+                }
+              }
+              let tmp_content = tableConfig[key].content;
+              if (tmp_content) {
+                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
+                if (replaceables = tmp_content.match(/\{(\w*)\}/)) {
+                  for (let arg of replaceables) {
+                    tmp_content = tmp_content.replace('{' + arg + '}', dataObj[i][arg]);
+                  }
+                }
               }
 
+              let contentArray = [];
               switch (true) {
                 case /^button\(.*\)/.test(tableConfig[key].content):
-                  let contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
-                  console.log(contentArray);
-                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
+                  contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
+                  rowArray[key] = uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
+//                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
                   break;
-                /*
-                    content: 'button(\'Del\',\'Delete\',\'primary\')'
-                  */
+                case /^multiselect\(.*\)/.test(tableConfig[key].content):
+                  //contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
+                  let tmp_selected = tmp_content.match(/^multiselect\(\[(.*)\]/)[1].split(',');
+                  rowArray[key] = uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
+//                  respond += uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
+                  break;
+
                 default:
               }
-              respond += '</td>';
+//              respond += '</td>';
             }
+          }
+          for(let key in rowArray) {
+            respond += '<td>' + rowArray[key] + '</td>';
           }
           respond += '</tr>';
         }
         respond += '</tbody>';
         respond += '</table>';
         $('#tableContainer').append(respond);
-        /*
-          let table = $("#list").DataTable({
-            paging: false
-          });
 
+        let table = $('#list')
+          .DataTable
+          //  { paging: false }
+          ();
           table.MakeCellsEditable({
-            "onUpdate": tableUpdate,
-            "columns": editable,
-            "allowNulls": false,
-            "confirmationButton": true,
-            "onValidate": tableValidate
+          onUpdate: tableUpdate,
+          columns: editable,
+          allowNulls: false,
+          confirmationButton: true,
+          onValidate: tableValidate
           });
-          */
       } else {
         respond = 'cant load List';
         $('#tableContainer').append(respond);
       }
-      addContentUpdate();
+      //  addContentUpdate();
+      let okButtonConfig = {};
+      okButtonConfig.label = 'Add';
+      okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
+      createPopupInput('Add', tableConfig, okButtonConfig);
     });
+  }
+
+
+  function uiMSelCreate(selected, allObjects) {
+    //Create object with all available objects
+    let objectList = {};
+    for (let val in allObjects) {
+      objectList[allObjects[val].name] = false;
+    }
+    for (let val of selected) {
+      objectList[val] = true;
+    }
+    let returnString = '<select id=multiselect class=multiselect multiple=multiple>';
+    for (let key of Object.keys(objectList)) {
+      if (objectList[key]) {
+        returnString += '<option selected>';
+      } else {
+        returnString += '<option>';
+      }
+      returnString += key;
+      returnString += '</option>';
+    }
+    returnString += '</select>';
+    console.log('selected');
+    console.log(selected);
+    console.log('allObjects');
+    console.log(allObjects);
+    return returnString;
   }
 
   function uiBtnCreate(label, functionString, type) {
@@ -259,29 +338,28 @@
     $.ajax({
       url: 'del',
       type: 'GET',
+      dataType: 'json',
       data: {
         id: id
       }
     })
       .done(data => {
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(JSON.stringify(data));
         }
-        console.log('Done delete id:' + id);
         listUpdate();
         $('#waitSpinner').modal('hide');
       })
       .fail(() => {
         $('#waitSpinner').modal('hide');
-        alert('Fail');
+        alert('Fail to delete');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
-        console.log('Final delete id:' + id);
       });
   }
 
-  function addSave() {
+  function addSave(label) {
     let addData = {};
     for (let key of Object.keys(tableConfig)) {
       if (tableConfig[key].addNew) {
@@ -289,11 +367,12 @@
           var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
           var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
           var regex = new RegExp(pattern, flags);
-          if (regex.test($('#add-' + key)[0].value) !== true) {
+          if (regex.test($('#' + label + '-' + key)[0].value) !== true) {
+            alert(key + ' ' + 'must patch regex ' + pattern);
             return 1;
           }
         }
-        addData[key] = $('#add-' + key)[0].value;
+        addData[key] = $('#' + label + '-' + key)[0].value;
       }
     }
 
@@ -304,21 +383,19 @@
       data: addData
     })
       .done(data => {
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(data);
         }
-        console.log(data);
         $('#waitSpinner').modal('hide');
-        $('#addForm').modal('hide');
+        $('#AddForm').modal('hide');
         listUpdate();
       })
       .fail(() => {
         $('#waitSpinner').modal('hide');
-        alert('Fail');
+        alert('Fail to add');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
-        console.log('Complete');
       });
   }
 
@@ -347,19 +424,16 @@
       }
     })
       .done(data => {
-        console.log(data);
-        if (JSON.parse(data).result !== 'Ok') {
+        if (data.result !== 'Ok') {
           alert(data);
         }
       })
       .fail(data => {
-        console.log('data :', data);
-        alert('Fail');
+        alert('Fail to change');
       })
       .always(() => {
         $('#waitSpinner').modal('hide');
         listUpdate();
-        console.log('Complete');
       });
   }
 
