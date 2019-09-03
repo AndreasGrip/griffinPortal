@@ -38,9 +38,9 @@ router.get('/set', (req, res, next) => {
     dbTable +
     ' SET ' +
     db.escape(req.query.valueToChange) +
-    "='" +
+    '=' +
     db.escape(req.query.newValue) +
-    "' where id = " +
+    ' where id = ' +
     db.escape(req.query.id);
 
   db.query(sql)
@@ -86,15 +86,19 @@ router.get('/add', (req, res, next) => {
     'INSERT INTO ' +
     mysqlConf.database +
     dbTable +
-    " (name, description, URL, type) values ('" +
+    ' (name, description, URL, type, icon, sortorder) values (' +
     db.escape(req.query.name) +
-    "', '" +
+    ', ' +
     db.escape(req.query.description) +
-    "', '" +
+    ', ' +
     db.escape(req.query.URL) +
-    "', '" +
+    ', ' +
     db.escape(req.query.type) +
-    "')";
+    ', ' +
+    db.escape(req.query.icon) +
+    ', ' +
+    db.escape(req.query.sortorder) +
+    ')';
 
   db.query(sql)
     .then(() => {
