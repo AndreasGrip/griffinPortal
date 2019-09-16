@@ -7,111 +7,65 @@ const db = new Mysql(mysqlConf);
 
 const dbTable = '.useraccess';
 
+function sqlQuery(sql) {
+  db.query(sql)
+    .then(data => {
+      const result = data[0];
+      res.status(200).json(result);
+    })
+    .catch(err => {
+      res.status(404).end();
+    });
+
+}
+
 router.get('/', (req, res, next) => {
   res.render('userAccess');
 });
 
-router.get('/get', (req, res, next) => {
+router.get('/userAccess', (req, res, next) => {
   const sql = 'select id, name, description, URL, type, icon, sortorder FROM ' + mysqlConf.database + dbTable + ' where deactivated is null';
-
-  db.query(sql)
-    .then(data => {
-      const result = data[0];
-      res.json(result);
-    })
-    .catch(err => {
-      res.json({
-        result: 'Error',
-        message: err.message
-      });
-    });
+  sqlQuery(sql);
 });
 
-router.get('/set', (req, res, next) => {
-  if (req.query.id === undefined || req.query.valueToChange === undefined || req.query.newValue === undefined) {
-    return 1;
+router.patch('/userAccess/:id', (req, res, next) => {
+  if (req.body.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
+    return false;
   }
 
-  const sql =
-    'UPDATE ' +
-    mysqlConf.database +
-    dbTable +
-    ' SET ' +
-    db.escape(req.query.valueToChange) +
-    '=' +
-    db.escape(req.query.newValue) +
-    ' where id = ' +
-    db.escape(req.query.id);
+  switch (req.body.valueToChange) {
+    case 'name':
+    case 'description':
+    case 'URL':
+    case 'type':
+    case 'icon':
+      break;
+    default:
+      return false;
+  }
 
-  db.query(sql)
-    .then(() => {
-      res.json({
-        result: 'Ok'
-      });
-    })
-    .catch(err => {
-      res.json({
-        result: 'Error',
-        message: err.message
-      });
-    });
+  const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' SET ' + req.body.valueToChange + '=' + db.escape(req.body.newValue) + ' where id = ' + db.escape(req.params.id);
+
+  sqlQuery(sql);
 });
 
-router.get('/del', (req, res, next) => {
-  if (req.query.id === undefined) {
+router.delete('/userAccess/:id', (req, res, next) => {
+  if (req.params.id === undefined) {
     return 1;
   }
-  const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' set deactivated = now() WHERE id = ' + db.escape(req.query.id);
+  const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' set deactivated = now() WHERE id = ' + db.escape(req.params.id);
 
-  db.query(sql)
-    .then(() => {
-      res.json({
-        result: 'Ok'
-      });
-    })
-    .catch(err => {
-      res.json({
-        result: 'Error',
-        message: err.message
-      });
-    });
+  sqlQuery(sql);
 });
 
-router.get('/add', (req, res, next) => {
+router.post('/userAccess', (req, res, next) => {
   // Required fields
-  if (req.query.name === undefined || req.query.URL === undefined || req.query.type === undefined || req.query.description === undefined) {
+  if (req.body.name === undefined || req.body.URL === undefined || req.body.type === undefined || req.body.description === undefined) {
     return 1;
   }
-  const sql =
-    'INSERT INTO ' +
-    mysqlConf.database +
-    dbTable +
-    ' (name, description, URL, type, icon, sortorder) values (' +
-    db.escape(req.query.name) +
-    ', ' +
-    db.escape(req.query.description) +
-    ', ' +
-    db.escape(req.query.URL) +
-    ', ' +
-    db.escape(req.query.type) +
-    ', ' +
-    db.escape(req.query.icon) +
-    ', ' +
-    db.escape(req.query.sortorder) +
-    ')';
+  const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (name, description, URL, type, icon, sortorder) values (' + db.escape(req.body.name) + ', ' + db.escape(req.body.description) + ', ' + db.escape(req.body.URL) + ', ' + db.escape(req.body.type) + ', ' + db.escape(req.body.icon) + ', ' + db.escape(req.body.sortorder) + ')';
 
-  db.query(sql)
-    .then(() => {
-      res.json({
-        result: 'Ok'
-      });
-    })
-    .catch(err => {
-      res.json({
-        result: 'Error',
-        message: err.message
-      });
-    });
+  sqlQuery(sql);
 });
 
 module.exports = router;
