@@ -48,9 +48,6 @@
 </div>
 
 <script type="text/javascript">
-  $(function() {
-    listUpdate();
-  });
   let tableConfig = {
     id: {
       label: 'Id'
@@ -100,6 +97,11 @@
     }
   };
 
+
+  $(function () {
+    listUpdate();
+  });
+
   function createPopupInput(label, config, okButtonConfig) {
     let result = '';
     result += '<div class="modal fade" id="' + label + 'Form" tabindex="-1" role="dialog" aria-labelledby="' + label + 'Label" aria-hidden="true">';
@@ -137,26 +139,9 @@
     $(result).appendTo($('.content-wrapper')[0]);
   }
 
-  function addContentUpdate() {
-    let respons = '';
-    for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].addNew) {
-        //        <div class="modal-body mx-3" id="addFormContent">
-        respons += '<div class="md-form mb-5">';
-        if (tableConfig[key].icon) {
-          respons += '<i class="fa ' + tableConfig[key].icon + ' prefix grey-text"></i>';
-        }
-        respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
-        respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
-        respons += '</div>';
-      }
-    }
-    $('#AddFormContent').innerHTML(respons);
-  }
-
   function listUpdate() {
     $.ajax({
-      url: 'get',
+      url: 'userAccess',
       type: 'GET',
       dataType: 'json'
     }).done(dataObj => {
@@ -207,24 +192,22 @@
           let rowArray = {};
           respond += '<tr>';
           for (let i2 = 0; i2 < Object.keys(dataObj[i]).length; i2++) {
-//            respond += '<td>' + dataObj[i][Object.keys(dataObj[i])[i2]] + '</td>';
             rowArray[Object.keys(dataObj[i])[i2]] = dataObj[i][Object.keys(dataObj[i])[i2]];
           }
           for (let key of Object.keys(tableConfig)) {
             if (tableConfig[key].extra || true) {
- //             respond += '<td>';
               //Just make sure the space key get some value.
               if (!rowArray[key]) {
                 rowArray[key] = '';
-              } ;
+              };
               let tmp_function = tableConfig[key].function;
               //create function string
               if (tmp_function) {
                 //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
                 if (replaceables = tmp_function.match(/\{(\w*)\}/)) {
-                for (let arg of replaceables) {
-                  tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
-                }
+                  for (let arg of replaceables) {
+                    tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
+                  }
                 }
               }
               let tmp_content = tableConfig[key].content;
@@ -242,21 +225,16 @@
                 case /^button\(.*\)/.test(tableConfig[key].content):
                   contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
                   rowArray[key] = uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
-//                  respond += uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
                   break;
                 case /^multiselect\(.*\)/.test(tableConfig[key].content):
-                  //contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
                   let tmp_selected = tmp_content.match(/^multiselect\(\[(.*)\]/)[1].split(',');
                   rowArray[key] = uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
-//                  respond += uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
                   break;
-
                 default:
               }
-//              respond += '</td>';
             }
           }
-          for(let key in rowArray) {
+          for (let key in rowArray) {
             respond += '<td>' + rowArray[key] + '</td>';
           }
           respond += '</tr>';
@@ -269,18 +247,18 @@
           .DataTable
           //  { paging: false }
           ();
-          table.MakeCellsEditable({
+        table.MakeCellsEditable({
           onUpdate: tableUpdate,
           columns: editable,
           allowNulls: false,
           confirmationButton: true,
           onValidate: tableValidate
-          });
+        });
       } else {
         respond = 'cant load List';
         $('#tableContainer').append(respond);
       }
-      //  addContentUpdate();
+
       let okButtonConfig = {};
       okButtonConfig.label = 'Add';
       okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
@@ -309,10 +287,6 @@
       returnString += '</option>';
     }
     returnString += '</select>';
-    console.log('selected');
-    console.log(selected);
-    console.log('allObjects');
-    console.log(allObjects);
     return returnString;
   }
 
@@ -336,22 +310,18 @@
   function del(id) {
     $('#waitSpinner').modal();
     $.ajax({
-      url: 'del',
-      type: 'GET',
+      url: 'userAccess/' + id,
+      type: 'DELETE',
       dataType: 'json',
       data: {
         id: id
       }
     })
       .done(data => {
-        if (data.result !== 'Ok') {
-          alert(JSON.stringify(data));
-        }
+        alert('Deleted');
         listUpdate();
-        $('#waitSpinner').modal('hide');
       })
       .fail(() => {
-        $('#waitSpinner').modal('hide');
         alert('Fail to delete');
       })
       .always(() => {
@@ -361,37 +331,32 @@
 
   function addSave(label) {
     let addData = {};
+    // Chech all regexp validations and abort of any of them fail.
     for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].addNew) {
-        if (tableConfig[key].validation) {
-          var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
-          var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
-          var regex = new RegExp(pattern, flags);
-          if (regex.test($('#' + label + '-' + key)[0].value) !== true) {
-            alert(key + ' ' + 'must patch regex ' + pattern);
-            return 1;
-          }
+      if (tableConfig[key].addNew && tableConfig[key].validation) {
+        var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
+        var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
+        var regex = new RegExp(pattern, flags);
+        if (regex.test($('#' + label + '-' + key)[0].value) !== true) {
+          alert(key + ' ' + 'must patch regex ' + pattern);
+          return false;
         }
+      } 
+      if (tableConfig[key].addNew) {
         addData[key] = $('#' + label + '-' + key)[0].value;
       }
     }
 
     $('#waitSpinner').modal();
     $.ajax({
-      url: 'add',
-      type: 'GET',
+      url: 'userAccess',
+      type: 'POST',
       data: addData
     })
       .done(data => {
-        if (data.result !== 'Ok') {
-          alert(data);
-        }
-        $('#waitSpinner').modal('hide');
-        $('#AddForm').modal('hide');
         listUpdate();
       })
       .fail(() => {
-        $('#waitSpinner').modal('hide');
         alert('Fail to add');
       })
       .always(() => {
@@ -415,8 +380,8 @@
     }
 
     $.ajax({
-      url: 'set',
-      type: 'GET',
+      url: 'userAccess/' + updatedRow.data()[tableConfig.id.column],
+      type: 'PATCH',
       data: {
         id: updatedRow.data()[tableConfig.id.column],
         valueToChange: valueToChange,
@@ -424,9 +389,6 @@
       }
     })
       .done(data => {
-        if (data.result !== 'Ok') {
-          alert(data);
-        }
       })
       .fail(data => {
         alert('Fail to change');

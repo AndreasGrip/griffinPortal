@@ -91,13 +91,13 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
     let result = {};
 
     switch (true) {
-      case !!/(^\/.+\/)(.*)/u.exec(req.path):
-        result = req.path.match(/(^\/.*\/)(.*)/u);
+      case !!/(^\/\w+\/)(\w*)/u.exec(req.path):
+        result = req.path.match(/(^\/\w*\/)(\w*)/u);
         url.path = result[1];
         url.type = result[2];
         break;
-      case !!/(^\/)(.*)/u.exec(req.path):
-        result = req.path.match(/(^\/)(.*)/u);
+      case !!/(^\/)(\w*)/u.exec(req.path):
+        result = req.path.match(/(^\/)(\w*)/u);
         url.path = result[1];
         url.type = result[2];
         break;
