@@ -7,14 +7,14 @@ const db = new Mysql(mysqlConf);
 
 const dbTable = '.useraccess';
 
-function sqlQuery(sql) {
+function sqlQuery(sql,res) {
   db.query(sql)
     .then(data => {
       const result = data[0];
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(404).end();
+      res.status(400).end(err);
     });
 
 }
@@ -25,7 +25,7 @@ router.get('/', (req, res, next) => {
 
 router.get('/userAccess', (req, res, next) => {
   const sql = 'select id, name, description, URL, type, icon, sortorder FROM ' + mysqlConf.database + dbTable + ' where deactivated is null';
-  sqlQuery(sql);
+  sqlQuery(sql,res);
 });
 
 router.patch('/userAccess/:id', (req, res, next) => {
@@ -46,7 +46,7 @@ router.patch('/userAccess/:id', (req, res, next) => {
 
   const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' SET ' + req.body.valueToChange + '=' + db.escape(req.body.newValue) + ' where id = ' + db.escape(req.params.id);
 
-  sqlQuery(sql);
+  sqlQuery(sql,res);
 });
 
 router.delete('/userAccess/:id', (req, res, next) => {
@@ -55,7 +55,7 @@ router.delete('/userAccess/:id', (req, res, next) => {
   }
   const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' set deactivated = now() WHERE id = ' + db.escape(req.params.id);
 
-  sqlQuery(sql);
+  sqlQuery(sql,res);
 });
 
 router.post('/userAccess', (req, res, next) => {
@@ -65,7 +65,7 @@ router.post('/userAccess', (req, res, next) => {
   }
   const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (name, description, URL, type, icon, sortorder) values (' + db.escape(req.body.name) + ', ' + db.escape(req.body.description) + ', ' + db.escape(req.body.URL) + ', ' + db.escape(req.body.type) + ', ' + db.escape(req.body.icon) + ', ' + db.escape(req.body.sortorder) + ')';
 
-  sqlQuery(sql);
+  sqlQuery(sql,res);
 });
 
 module.exports = router;
