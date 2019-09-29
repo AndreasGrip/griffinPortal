@@ -23,3 +23,30 @@
   left: 50%;
   margin-right: -50%;
 }
+
+ul.mSelOptions {
+  margin-bottom: 0px;
+  padding: 4px;
+}
+
+ul.mSelOptions li {
+  background-color: black;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  box-sizing: border-box;
+  color:blanchedalmond;
+  display: inline-block;
+  line-height: 21px;
+  margin-left: 2px;
+  margin-bottom: 5px;
+  max-width: 99%;
+  padding-bottom: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-top: 2px;
+  position: relative;
+  user-select: none;
+  z-index: 1;
+}

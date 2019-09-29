@@ -14,31 +14,32 @@ function sqlQuery(sql,res) {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(400).end(err);
+      res.status(400).json(err).end();
     });
 
 }
 
 router.get('/', (req, res, next) => {
-  res.render('userAccess');
+  res.render('userAccess', {label: 'userAccess', path: 'userAccess/'});
 });
 
-router.get('/userAccess', (req, res, next) => {
+router.get('/list', (req, res, next) => {
   const sql = 'select id, name, description, URL, type, icon, sortorder FROM ' + mysqlConf.database + dbTable + ' where deactivated is null';
   sqlQuery(sql,res);
 });
 
-router.patch('/userAccess/:id', (req, res, next) => {
-  if (req.body.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
+router.patch('/:id', (req, res, next) => {
+  if (req.params.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
     return false;
   }
-
+  // what value should be possible to change.
   switch (req.body.valueToChange) {
     case 'name':
     case 'description':
     case 'URL':
     case 'type':
     case 'icon':
+    case 'sortorder':
       break;
     default:
       return false;
@@ -49,16 +50,16 @@ router.patch('/userAccess/:id', (req, res, next) => {
   sqlQuery(sql,res);
 });
 
-router.delete('/userAccess/:id', (req, res, next) => {
+router.delete('/:id', (req, res, next) => {
   if (req.params.id === undefined) {
-    return 1;
+    return false;
   }
   const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' set deactivated = now() WHERE id = ' + db.escape(req.params.id);
 
   sqlQuery(sql,res);
 });
 
-router.post('/userAccess', (req, res, next) => {
+router.post('/', (req, res, next) => {
   // Required fields
   if (req.body.name === undefined || req.body.URL === undefined || req.body.type === undefined || req.body.description === undefined) {
     return 1;
