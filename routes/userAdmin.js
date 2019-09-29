@@ -20,10 +20,10 @@ function sqlQuery(sql,res) {
 }
 
 router.get('/', (req, res, next) => {
-  res.render('userAdmin');
+  res.render('userAdmin', {label: 'userAdmin', path: 'userAdmin/'});
 });
 
-router.get('/users', (req, res, next) => {
+router.get('/list', (req, res, next) => {
   //const sql = "select id, ifnull(userName,'') userName, firstName, lastName, email FROM " + mysqlConf.database + dbTable + ' where deactivated is null';
   // eslint-disable-next-line no-multi-str
   const sql = `select u.id, ifnull(u.userName,'') userName, u.firstName, u.lastName, u.email, concat('[', ifnull(group_concat(ua.name),''), ']') as access \
@@ -36,31 +36,22 @@ router.get('/users', (req, res, next) => {
   sqlQuery(sql, res);
 });
 
-router.get('/useraccess', (req, res, next) => {
-  const sql = 'select id, name from ' + mysqlConf.database + '.useraccess where deactivated is null order by name ';
-  sqlQuery(sql, res);
-});
-
-router.patch('/useraccess/:userid', (req, res, next) => {
-  if (req.params.userid === undefined || req.body.accesstochange === undefined || req.body.state === undefined) {
-    return false;
-  }
-
-  let sql;
-  if (req.body.state === 'true') {
-    sql = 'insert into ' + mysqlConf.database + '.user_useraccess (userid, useraccessid) \
-    select ' + db.escape(req.params.userid) + ',id from ' + mysqlConf.database + '.useraccess where name = ' + db.escape(req.body.accesstochange);
-  } else {
-    sql = 'delete uua from user_useraccess uua join useraccess ua on uua.useraccessid = ua.id \
-    where uua.userid = ' + db.escape(req.params.userid) + ' and ua.name = ' + db.escape(req.body.accesstochange);
-  }
-  sqlQuery(sql, res);
-});
-
-router.patch('/users/:id', (req, res, next) => {
+router.patch('/:id', (req, res, next) => {
   if (req.params.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
     return false;
   }
+  // what value should be possible to change.
+  switch (req.body.valueToChange) {
+    case 'userName':
+    case 'firstName':
+    case 'lastName':
+    case 'password':
+      break;
+    default:
+      return false;
+  }
+
+
   // if it's the password, a special set of rules and convert from plaintext to hashed format.
   if (req.body.valueToChange.toLowerCase() === 'password') {
     if (/^.{0,6}$/u.test(db.escape(req.body.newValue))) {
@@ -73,7 +64,7 @@ router.patch('/users/:id', (req, res, next) => {
   sqlQuery(sql, res);
 });
 
-router.delete('/users/:id', (req, res, next) => {
+router.delete('/:id', (req, res, next) => {
   if (req.params.id === undefined) {
     return false;
   }
@@ -82,7 +73,7 @@ router.delete('/users/:id', (req, res, next) => {
   sqlQuery(sql, res);
 });
 
-router.post('/users', (req, res, next) => {
+router.post('/', (req, res, next) => {
   if (req.body.userName === undefined || req.body.firstName === undefined || req.body.lastName === undefined || req.body.email === undefined || req.body.password === undefined) {
     return false;
   }
@@ -91,5 +82,27 @@ router.post('/users', (req, res, next) => {
   const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (userName, firstName, lastName, email, password) values (' + db.escape(req.body.userName) + ', ' + db.escape(req.body.firstName) + ', ' + db.escape(req.body.lastName) + ', ' + db.escape(req.body.email) + ', ' + db.escape(password) + ')';
   sqlQuery(sql, res);
 });
+
+router.get('/useraccess', (req, res, next) => {
+  const sql = 'select id, name from ' + mysqlConf.database + '.useraccess where deactivated is null order by name ';
+  sqlQuery(sql, res);
+});
+
+router.patch('/useraccess/:userid', (req, res, next) => {
+  if (req.params.userid === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
+    return false;
+  }
+
+  let sql;
+  if (req.body.newValue === 'true') {
+    sql = 'insert into ' + mysqlConf.database + '.user_useraccess (userid, useraccessid) \
+    select ' + db.escape(req.params.userid) + ',id from ' + mysqlConf.database + '.useraccess where name = ' + db.escape(req.body.valueToChange);
+  } else {
+    sql = 'delete uua from user_useraccess uua join useraccess ua on uua.useraccessid = ua.id \
+    where uua.userid = ' + db.escape(req.params.userid) + ' and ua.name = ' + db.escape(req.body.valueToChange);
+  }
+  sqlQuery(sql, res);
+});
+
 
 module.exports = router;

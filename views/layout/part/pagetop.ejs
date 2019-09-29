@@ -1,0 +1,48 @@
+<!-- Note to self as of 2019-05-19 AGR, This is absolutly horrible code PLEASE PLEASE clean it up, -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        <%= label %>
+      </h1>
+      <ol class="breadcrumb">
+        <li>
+          <a href="../"><i class="fa fa-dashboard"></i> Home</a>
+        </li>
+        <li class="active"><i class="fa fa-user-circle"></i> <%= label %></li>
+      </ol>
+    </section>
+  
+    <div class="text-center">
+      <a href="" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#AddForm">Add</a>
+    </div>
+  
+    <div class="modal" id="waitSpinner" tabindex="-1" role="dialog" aria-labelledby="waitSpinnerTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="waitSpinnerTitle"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <rs class="modal-body hcenter">
+            <div class="loader"></div>
+          </rs>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Main content -->
+    <section class="content">
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <div id="tableContainer"></div>
+        <!-- /.Left col -->
+      </div>
+      <!-- /.row (main row) -->
+    </section>
+  </div>
+  

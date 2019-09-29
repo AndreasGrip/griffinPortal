@@ -1,102 +1,6 @@
-<!-- Note to self as of 2019-05-19 AGR, This is absolutly horrible code PLEASE PLEASE clean it up, -->
-<div class="content-wrapper">
-  <!-- Content Header (Page header) -->
-  <section class="content-header">
-    <h1>
-      Användar Administration
-      <small>Control panel</small>
-    </h1>
-    <ol class="breadcrumb">
-      <li>
-        <a href="../search/"><i class="fa fa-dashboard"></i> Home</a>
-      </li>
-      <li class="active"><i class="fa fa-user-circle"></i> User Administration</li>
-    </ol>
-  </section>
-
-  <div class="text-center">
-    <a href="" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#AddForm">Add</a>
-  </div>
-
-  <div class="modal" id="waitSpinner" tabindex="-1" role="dialog" aria-labelledby="waitSpinnerTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="waitSpinnerTitle"></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <rs class="modal-body hcenter">
-          <div class="loader"></div>
-        </rs>
-        <div class="modal-footer"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <section class="content">
-    <!-- Main row -->
-    <div class="row">
-      <!-- Left col -->
-      <div id="tableContainer"></div>
-      <!-- /.Left col -->
-    </div>
-    <!-- /.row (main row) -->
-  </section>
-</div>
+<% include part/pagetop.ejs %>
 
 <script type="text/javascript">
-  $(function () {
-    window.adminLTE = {};
-    $.ajax({
-      url: 'useraccess',
-      type: 'GET',
-      dataType: 'json'
-    })
-      .done(data => {
-        window.adminLTE.allAccess = data;
-      })
-      .fail(data => {
-        alert('failed to get access levels');
-      })
-      .always(() => {
-        listUpdate();
-      });
-  });
-
-  let changeId = 0;
-
-  function changepasswordShow(id) {
-    changeId = id;
-    $('#ChangePasswordForm').modal('show');
-  }
-
-  function changePassword() {
-    let passwd = $('#ChangePassword-password')[0].value;
-    $('#waitSpinner').modal();
-    $.ajax({
-      url: 'users/' + changeId,
-      type: 'PATCH',
-      dataType: 'json',
-      data: {
-        valueToChange: 'password',
-        newValue: passwd
-      }
-    })
-      .done(data => {
-        $('#ChangePasswordForm').modal('hide');
-      })
-      .fail(() => {
-        alert('Failed to change password');
-      })
-      .always(() => {
-        $('#waitSpinner').modal('hide');
-        $('#ChangePassword-password')[0].value = '';
-      });
-  }
-
   let tableConfig = {
     id: {
       label: 'Id'
@@ -132,7 +36,8 @@
     access: {
       label: 'Access',
       icon: 'fa-handshake-o',
-      content: 'multiselect({access},allAccess)'
+      content: 'multiselect({access},allAccess)',
+      api: 'useraccess'
     },
     password: {
       label: 'Password',
@@ -149,42 +54,97 @@
     }
   };
 
-  function createPopupInput(label, config, okButtonConfig) {
-    let result = '';
-    result += '<div class="modal fade" id="' + label + 'Form" tabindex="-1" role="dialog" aria-labelledby="' + label + 'Label" aria-hidden="true">';
-    result += '<div class="modal-dialog" role="document">';
-    result += '<div class="modal-content">';
-    result += '<div class="modal-header text-center">';
-    result += '<h4 class="modal-title w-100 font-weight-bold">' + label + '</h4>';
-    result += '<button type="button" class="close" data-dismiss="modal" aria-label="Close">';
-    result += '<span aria-hidden="true">&times;</span>';
-    result += '</button>';
-    result += '</div>';
-    result += '<div class="modal-body mx-3" id="' + label + 'FormContent">';
-    result += '<!-- Content will go here -->';
+  <% include part/functions.js %>
 
-    for (let key of Object.keys(config)) {
-      if (config[key].addNew) {
-        result += '<div class="md-form mb-5">';
-        if (config[key].icon) {
-          result += '<i class="fa ' + config[key].icon + ' prefix grey-text"></i>';
-        }
-        result += '<label data-error="wrong" data-success="right" for="' + label + '-' + key + '">' + config[key].label + '</label>';
-        result += '<input type="' + key + '" id="' + label + '-' + key + '" class="form-control validate">';
-        result += '</div>';
+    $(function () {
+      window.adminLTE = {};
+      $.ajax({
+        url: 'useraccess',
+        type: 'GET',
+        dataType: 'json'
+      })
+        .done(data => {
+          window.adminLTE.allAccess = data;
+        })
+        .fail(data => {
+          alert('failed to get access levels');
+        })
+        .always(() => {
+          initPage();
+        });
+    });
+
+  function initPage() {
+    listUpdate();
+
+    let okButtonConfig = {};
+    okButtonConfig.label = 'Add';
+    okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
+    let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
+    $(addPopup).appendTo($('.content-wrapper')[0]);
+
+    okButtonConfig.function = 'changePassword()';
+    okButtonConfig.label = 'ChangePassword';
+    changepasswordConfig = {
+      password: {
+        label: 'Password',
+        validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+        icon: 'fa-key',
+        addNew: true
       }
-    }
-
-    result += '</div>';
-    result += '<div class="modal-footer d-flex justify-content-center">';
-    result += '<button class="btn btn-primary" onclick="' + okButtonConfig.function + ';">' + okButtonConfig.label + '</button>';
-    result += '<button class="btn btn-danger" data-toggle="modal" data-target="#' + label + 'Form">Cancel</button>';
-    result += '</div>';
-    result += '</div>';
-    result += '</div>';
-    result += '</div>';
-    $(result).appendTo($('.content-wrapper')[0]);
+    };
+    let passwordPopup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+    $(passwordPopup).appendTo($('.content-wrapper')[0]);
+/*
+    $(".multiselect").multiselect({
+      onChange: (option, checked, select) => {
+        let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
+        let optionToChange = $(option).val();
+        let valueSet = checked;
+        $.ajax({
+          url: 'useraccess/' + userId,
+          type: 'PATCH',
+          dataType: 'json',
+          data: {
+            accesstochange: optionToChange,
+            state: valueSet
+          }
+        })
+      }
+    });*/
   }
+
+  let changeId = 0;
+
+  function changepasswordShow(id) {
+    changeId = id;
+    $('#ChangePasswordForm').modal('show');
+  }
+
+  function changePassword() {
+    let passwd = $('#ChangePassword-password')[0].value;
+    $('#waitSpinner').modal();
+    $.ajax({
+      url: changeId,
+      type: 'PATCH',
+      dataType: 'json',
+      data: {
+        valueToChange: 'password',
+        newValue: passwd
+      }
+    })
+      .done(data => {
+        $('#ChangePasswordForm').modal('hide');
+      })
+      .fail(() => {
+        alert('Failed to change password');
+      })
+      .always(() => {
+        $('#waitSpinner').modal('hide');
+        $('#ChangePassword-password')[0].value = '';
+      });
+  }
+
 
   function addContentUpdate() {
     let respons = '';
@@ -202,303 +162,5 @@
     $('#AddFormContent').innerHTML(respons);
   }
 
-  function listUpdate() {
-    $.ajax({
-      url: 'users',
-      type: 'GET',
-      dataType: 'json'
-    }).done(dataObj => {
-      //Clear the container if there is anything there
-      $('#tableContainer').empty();
-      //Make sure that the dataobject is not empty.
-      let columns = 0;
-      let editable = [];
-      if (dataObj.length > 0) {
-        respond = '<table class="table table-bordered" id="list">';
-        respond += '<thead><tr>';
-        //For each resultset...
-        for (let i = 0; i < Object.keys(dataObj[0]).length; i++) {
-          //If there was no configuration for this column create one
-          if (tableConfig[Object.keys(dataObj[0])[i]] === undefined) {
-            tableConfig[Object.keys(dataObj[0])[i]] = {};
-          }
-          //save the column number
-          tableConfig[Object.keys(dataObj[0])[i]].column = i;
-          columns = i;
-          //If no label is defined, use the column name as label
-          if (tableConfig[Object.keys(dataObj[0])[i]].label === undefined) {
-            tableConfig[Object.keys(dataObj[0])[i]].label = Object.keys(dataObj[0])[i];
-          }
-          respond += '<th>' + tableConfig[Object.keys(dataObj[0])[i]].label + '</th>';
-        }
 
-        for (let key of Object.keys(tableConfig)) {
-          if (tableConfig[key].column === undefined || tableConfig[key].extra) {
-            if (tableConfig[key].column === undefined) {
-              tableConfig[key].column = ++columns;
-              tableConfig[key].extra = true;
-            }
-            //If no label is defined, use the column name as label
-            if (tableConfig[key].label === undefined) {
-              tableConfig[key].label = key;
-            }
-            respond += '<th>' + tableConfig[key].label + '</th>';
-          }
-          if (tableConfig[key].editable) {
-            editable.push(tableConfig[key].column);
-          }
-        }
-
-        respond += '</tr></thead>';
-        respond += '<tbody>';
-        for (let i = 0; i < dataObj.length; i++) {
-          let rowArray = {};
-          respond += '<tr>';
-          //Add all data we fetched from DB
-          for (let i2 = 0; i2 < Object.keys(dataObj[i]).length; i2++) {
-            rowArray[Object.keys(dataObj[i])[i2]] = dataObj[i][Object.keys(dataObj[i])[i2]];
-          }
-          console.log(rowArray);
-          for (let key of Object.keys(tableConfig)) {
-            if (tableConfig[key].extra || true) {
-              //Just make sure the space key get some value.
-              if (!rowArray[key]) {
-                rowArray[key] = '';
-              };
-              let tmp_function = tableConfig[key].function;
-              //create function string
-              if (tmp_function) {
-                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
-                if (replaceables = tmp_function.match(/\{(\w*)\}/)) {
-                  for (let arg of replaceables) {
-                    tmp_function = tmp_function.replace('{' + arg + '}', dataObj[i][arg]);
-                  }
-                }
-              }
-              let tmp_content = tableConfig[key].content;
-              if (tmp_content) {
-                //replaceables are things written with {} around them like {id}, {id} will be replaced with value of "column" id.
-                if (replaceables = tmp_content.match(/\{(\w*)\}/)) {
-                  for (let arg of replaceables) {
-                    tmp_content = tmp_content.replace('{' + arg + '}', dataObj[i][arg]);
-                  }
-                }
-              }
-
-              let contentArray = [];
-              switch (true) {
-                case /^button\(.*\)/.test(tableConfig[key].content):
-                  contentArray = tableConfig[key].content.match(/\w+\((.*)\)/)[1].split(',');
-                  rowArray[key] = uiBtnCreate(contentArray[0], tmp_function, contentArray[1]);
-                  break;
-                case /^multiselect\(.*\)/.test(tableConfig[key].content):
-                  let tmp_selected = tmp_content.match(/^multiselect\(\[(.*)\]/)[1].split(',');
-                  rowArray[key] = uiMSelCreate(tmp_selected, window.adminLTE.allAccess);
-                  break;
-
-                default:
-              }
-            }
-          }
-          for (let key in rowArray) {
-            respond += '<td>' + rowArray[key] + '</td>';
-          }
-          respond += '</tr>';
-        }
-        respond += '</tbody>';
-        respond += '</table>';
-        $('#tableContainer').append(respond);
-
-        let table = $('#list')
-          .DataTable
-          //  { paging: false }
-          ();
-        table.MakeCellsEditable({
-          onUpdate: tableUpdate,
-          columns: editable,
-          allowNulls: false,
-          confirmationButton: true,
-          onValidate: tableValidate
-        });
-      } else {
-        respond = 'cant load List';
-        $('#tableContainer').append(respond);
-      }
-      let okButtonConfig = {};
-      okButtonConfig.label = 'Add';
-      okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
-      createPopupInput('Add', tableConfig, okButtonConfig);
-
-      okButtonConfig.function = 'changePassword()';
-      okButtonConfig.label = 'ChangePassword';
-      changepasswordConfig = {
-        password: {
-          label: 'Password',
-          validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
-          icon: 'fa-key',
-          addNew: true
-        }
-      };
-      createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
-      $(".multiselect").multiselect({
-        onChange: (option, checked, select) => {
-          let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
-          let optionToChange = $(option).val();
-          let valueSet = checked;
-          $.ajax({
-            url: 'useraccess/' + userId,
-            type: 'PATCH',
-            dataType: 'json',
-            data: {
-              accesstochange: optionToChange,
-              state: valueSet
-            }
-          })
-        }
-      });
-    });
-
-  }
-
-  function uiMSelCreate(selected, allObjects) {
-    //Create object with all available objects
-    let objectList = {};
-    for (let val in allObjects) {
-      objectList[allObjects[val].name] = false;
-    }
-    for (let val of selected) {
-      objectList[val] = true;
-    }
-    let returnString = '<select id=multiselect class=multiselect multiple=multiple>';
-    for (let key of Object.keys(objectList)) {
-      if (objectList[key]) {
-        returnString += '<option selected>';
-      } else {
-        returnString += '<option>';
-      }
-      returnString += key;
-      returnString += '</option>';
-    }
-    returnString += '</select>';
-    console.log('selected');
-    console.log(selected);
-    console.log('allObjects');
-    console.log(allObjects);
-    return returnString;
-  }
-
-  function uiBtnCreate(label, functionString, type) {
-    switch (type) {
-      case 'default':
-      case 'primary':
-      case 'success':
-      case 'info':
-      case 'warning':
-      case 'danger':
-      case 'link':
-        break;
-      default:
-        type = 'default';
-    }
-    let returnString = '<button class="btn btn-' + type + ' btn-rounded mb-4" onClick="' + functionString + '">' + label + '</button>';
-    return returnString;
-  }
-
-  function del(id) {
-    $('#waitSpinner').modal();
-    $.ajax({
-      url: 'users/' + id,
-      type: 'DELETE',
-      dataType: 'json',
-      data: {
-      }
-    })
-      .done(data => {
-        listUpdate();
-      })
-      .fail(() => {
-        alert('Fail to delete user');
-      })
-      .always(() => {
-        $('#waitSpinner').modal('hide');
-      });
-  }
-
-  function addSave(label) {
-    let addData = {};
-    for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].addNew) {
-        if (tableConfig[key].validation) {
-          var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
-          var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
-          var regex = new RegExp(pattern, flags);
-          if (regex.test($('#' + label + '-' + key)[0].value) !== true) {
-            alert(key + ' ' + 'must patch regex ' + pattern);
-            return false;
-          }
-        }
-        addData[key] = $('#' + label + '-' + key)[0].value;
-      }
-    }
-
-    $('#waitSpinner').modal();
-    $.ajax({
-      url: 'users',
-      type: 'POST',
-      data: addData
-    })
-      .done(data => {
-        listUpdate();
-      })
-      .fail(() => {
-        alert('Fail to add user');
-      })
-      .always(() => {
-        $('#waitSpinner').modal('hide');
-      });
-  }
-
-  function tableUpdate(updatedCell, updatedRow, oldValue) {
-    $('#waitSpinner').modal();
-    let valueToChange;
-
-    for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].column === updatedCell.index().column) {
-        valueToChange = key;
-        break;
-      }
-    }
-    if (!valueToChange) {
-      alert("Can't update " + valueToChange);
-      return false;
-    }
-
-    $.ajax({
-      url: 'users/' + updatedRow.data()[tableConfig.id.column],
-      type: 'PATCH',
-      data: {
-        valueToChange: valueToChange,
-        newValue: updatedCell.data()
-      }
-    })
-      .fail(data => {
-        alert('Fail to change user');
-      })
-      .always(() => {
-        $('#waitSpinner').modal('hide');
-        listUpdate();
-      });
-  }
-
-  function tableValidate(updatedCell, updatedRow, newValue) {
-    for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].column == updatedCell.index().column && tableConfig[key].validation) {
-        var flags = tableConfig[key].validation.replace(/.*\/([gimy]*)$/, '$1');
-        var pattern = tableConfig[key].validation.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
-        var regex = new RegExp(pattern, flags);
-        return regex.test(newValue);
-      }
-    }
-    return true;
-  }
 </script>
