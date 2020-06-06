@@ -298,10 +298,8 @@
       type: 'GET',
       dataType: 'json'
     }).done(dataObj => {
-      console.log('dataObj :', dataObj);
       for (let menurow of dataObj) {
         $('#menuoptions').append('<a href="' + menurow.URL + '"><i class="fa ' + menurow.icon + '"></i> <span>' + menurow.description + '</span></a>');
-        console.log(menurow);
       }
     });
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-str */
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const mysqlConf = require('../agr_conf/mysql_config');
@@ -15,17 +16,17 @@ function sqlQuery(sql,res) {
       res.status(200).json(result);
     })
     .catch(err => {
-      res.status(400).end(err);
+      const errorMsg = err.message ? err.message : JSON.stringify(err);
+      res.status(400).end(errorMsg);
     });
 }
 
 router.get('/', (req, res, next) => {
-  res.render('userAdmin', {label: 'userAdmin', path: 'userAdmin/'});
+  res.render('base', { pageToRender: 'userAdmin', label: 'userAdmin', path: 'userAdmin/'});
 });
 
 router.get('/list', (req, res, next) => {
   //const sql = "select id, ifnull(userName,'') userName, firstName, lastName, email FROM " + mysqlConf.database + dbTable + ' where deactivated is null';
-  // eslint-disable-next-line no-multi-str
   const sql = `select u.id, ifnull(u.userName,'') userName, u.firstName, u.lastName, u.email, concat('[', ifnull(group_concat(ua.name),''), ']') as access \
       FROM ${mysqlConf.database}${dbTable} u \
       left join ${mysqlConf.database}.user_useraccess uua on u.id = uua.userid \
@@ -38,6 +39,7 @@ router.get('/list', (req, res, next) => {
 
 router.patch('/:id', (req, res, next) => {
   if (req.params.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
+    res.status(400).end();
     return false;
   }
   // what value should be possible to change.
@@ -46,8 +48,10 @@ router.patch('/:id', (req, res, next) => {
     case 'firstName':
     case 'lastName':
     case 'password':
+    case 'email':
       break;
     default:
+      res.status(401).end();
       return false;
   }
 
@@ -55,6 +59,7 @@ router.patch('/:id', (req, res, next) => {
   // if it's the password, a special set of rules and convert from plaintext to hashed format.
   if (req.body.valueToChange.toLowerCase() === 'password') {
     if (/^.{0,6}$/u.test(db.escape(req.body.newValue))) {
+      res.status(400).end();
       return false;
     }
     req.body.newValue = bcrypt.hashSync(req.body.newValue, 10);
@@ -66,6 +71,7 @@ router.patch('/:id', (req, res, next) => {
 
 router.delete('/:id', (req, res, next) => {
   if (req.params.id === undefined) {
+    res.status(400).end();
     return false;
   }
 
@@ -75,10 +81,11 @@ router.delete('/:id', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
   if (req.body.userName === undefined || req.body.firstName === undefined || req.body.lastName === undefined || req.body.email === undefined || req.body.password === undefined) {
+    res.status(400).end();
     return false;
   }
 
-  const password = bcrypt.hashSync(db.escape(req.body.password), 10);
+  const password = bcrypt.hashSync(req.body.password, 10);
   const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (userName, firstName, lastName, email, password) values (' + db.escape(req.body.userName) + ', ' + db.escape(req.body.firstName) + ', ' + db.escape(req.body.lastName) + ', ' + db.escape(req.body.email) + ', ' + db.escape(password) + ')';
   sqlQuery(sql, res);
 });
@@ -90,6 +97,7 @@ router.get('/useraccess', (req, res, next) => {
 
 router.patch('/useraccess/:userid', (req, res, next) => {
   if (req.params.userid === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
+    res.status(400).end();
     return false;
   }
 
@@ -103,6 +111,5 @@ router.patch('/useraccess/:userid', (req, res, next) => {
   }
   sqlQuery(sql, res);
 });
-
 
 module.exports = router;

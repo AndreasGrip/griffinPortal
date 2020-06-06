@@ -1,4 +1,7 @@
 node_modules
-agr_conf
 public/bower_components
 .env
+*.log
+**/_old/
+tmp/
+log/

@@ -7,7 +7,7 @@ const db = new Mysql(mysqlConf);
 
 const dbTable = '.useraccess';
 
-function sqlQuery(sql,res) {
+function sqlQuery(sql, res) {
   db.query(sql)
     .then(data => {
       const result = data[0];
@@ -16,16 +16,15 @@ function sqlQuery(sql,res) {
     .catch(err => {
       res.status(400).json(err).end();
     });
-
 }
 
 router.get('/', (req, res, next) => {
-  res.render('userAccess', {label: 'userAccess', path: 'userAccess/'});
+  res.render('base', { pageToRender: 'userAccess', label: 'userAccess', path: 'userAccess/'});
 });
 
 router.get('/list', (req, res, next) => {
   const sql = 'select id, name, description, URL, type, icon, sortorder FROM ' + mysqlConf.database + dbTable + ' where deactivated is null';
-  sqlQuery(sql,res);
+  sqlQuery(sql, res);
 });
 
 router.patch('/:id', (req, res, next) => {
@@ -42,12 +41,12 @@ router.patch('/:id', (req, res, next) => {
     case 'sortorder':
       break;
     default:
-      return false;
+      return res.status(400).end();
   }
 
   const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' SET ' + req.body.valueToChange + '=' + db.escape(req.body.newValue) + ' where id = ' + db.escape(req.params.id);
 
-  sqlQuery(sql,res);
+  sqlQuery(sql, res);
 });
 
 router.delete('/:id', (req, res, next) => {
@@ -56,7 +55,7 @@ router.delete('/:id', (req, res, next) => {
   }
   const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' set deactivated = now() WHERE id = ' + db.escape(req.params.id);
 
-  sqlQuery(sql,res);
+  sqlQuery(sql, res);
 });
 
 router.post('/', (req, res, next) => {
@@ -66,7 +65,7 @@ router.post('/', (req, res, next) => {
   }
   const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (name, description, URL, type, icon, sortorder) values (' + db.escape(req.body.name) + ', ' + db.escape(req.body.description) + ', ' + db.escape(req.body.URL) + ', ' + db.escape(req.body.type) + ', ' + db.escape(req.body.icon) + ', ' + db.escape(req.body.sortorder) + ')';
 
-  sqlQuery(sql,res);
+  sqlQuery(sql, res);
 });
 
 module.exports = router;
