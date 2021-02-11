@@ -19,7 +19,7 @@ function sqlQuery(sql, res) {
 }
 
 router.get('/', (req, res, next) => {
-  res.render('base', { pageToRender: 'userAccess', label: 'userAccess', path: 'userAccess/' });
+  res.render('base', { pageToRender: 'userAccess', label: 'userAccess', path: 'userAccess/'});
 });
 
 router.get('/list', (req, res, next) => {
@@ -27,7 +27,7 @@ router.get('/list', (req, res, next) => {
   sqlQuery(sql, res);
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id(\\d+)', (req, res, next) => {
   if (req.params.id === undefined || req.body.valueToChange === undefined || req.body.newValue === undefined) {
     return false;
   }
@@ -49,7 +49,7 @@ router.patch('/:id', (req, res, next) => {
   sqlQuery(sql, res);
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id(\\d+)', (req, res, next) => {
   if (req.params.id === undefined) {
     return false;
   }

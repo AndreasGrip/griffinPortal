@@ -7,7 +7,6 @@ const router = express.Router();
 const db = new Mysql(mysqlConf);
 
 router.get('/bower_components/', (req, res, next) => {
-  console.log('bower');
   next();
 });
 
@@ -18,11 +17,11 @@ router.get('/logout/', (req, res, next) => {
 });
 
 router.get('/login/', (req, res, next) => {
-  console.log('login');
   if (req.session && req.session.user !== undefined && req.session.user.id !== undefined) {
     return res.redirect('../');
   } else {
-    res.render('login');
+    console.log('login' + req.session.user);
+    res.render('login', {});
   }
 });
 
@@ -31,33 +30,52 @@ router.post('/login/', (req, res, next) => {
   const query = 'select id, userName, salt, password, firstName, lastName, email from ' + mysqlConf.database + '.users where (email = ' + db.escape(req.body.email) + ' or userName = ' + db.escape(req.body.email) + ') and deactivated is null';
 
   db.query(query)
-    .then(data => {
+    .then((data) => {
       if (data[0].length === 0) {
-        console.log('No user found for user ', req.body.email);
+        throw new Error('No user found for user ' + req.body.email);
       } else if (data[0].length > 1) {
-        console.log('More than one match found for user ', req.body.email);
+        throw new Error('More than one match found for user ' + req.body.email);
       } else if (bcrypt.compareSync(req.body.password, data[0][0].password)) {
         req.session.user = {};
         req.session.user = data[0][0];
-        console.log('Correct password');
+        if (!req.session.user.id) {
+          throw new Error('Failed to init user (userid missing), contact administrator. User: ' + req.body.email);
+        }
       } else {
-        console.log('Wrong password');
+        throw new Error('Wrong password ' + req.body.email);
+      }
+    })
+    // get the accesslevels for the user from database
+    .then(() => {
+      const sql = 'select URL, type from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ');';
+      return db.query(sql);
+    })
+    // When the sql is done add the users accesslevels to his/her session.
+    .then((data) => {
+      req.session.access = {};
+      for (const acc of data[0]) {
+        req.session.access[acc.URL] = acc.type;
+      }
+    })
+    // get the settings for the user from database
+    .then(() => {
+      const sql = 'select udt.name, ud.value from adminlte.userdata ud join adminlte.userdatatypes udt on udt.id = ud.userdatatypeid where ud.userid = ' + req.session.user.id;
+      return db.query(sql);
+    })
+    // When the sql is done add the users settings to his/her session.
+    .then((data) => {
+      req.session.settings = {};
+      for (const setting of data[0]) {
+        req.session.settings[setting.name] = setting.value;
       }
     })
     .then(() => {
-      if (req.session.user) {
-        const sql = 'select URL, type from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ');';
-
-        db.query(sql).then(data => {
-          req.session.access = {};
-          for (const acc of data[0]) {
-            req.session.access[acc.URL] = acc.type;
-          }
-          res.redirect('../');
-        });
-      } else {
-        res.redirect('../');
-      }
+      res.redirect('../');
+    })
+    .catch((err) => {
+      res.render('login', { error: err });
+      //res.status(503);
+      //res.render('error', { error: err });
     });
 });
 
@@ -96,7 +114,6 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
         next();
       } else {
         for (const type of req.session.access[url.path].split(',')) {
-          // eslint-disable-next-line max-depth
           if (type === url.type) {
             next();
           }

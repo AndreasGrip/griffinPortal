@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <% include layout/header.ejs %>
+    <%- include('layout/header.ejs')  %>
   </head>
   <body class="hold-transition skin-blue sidebar-mini">
     <div class="wrapper">
-      <% include layout/navigation.ejs %> 
+      <%- include('layout/navigation.ejs')  %> 
       <%- include('layout/' + pageToRender + '.ejs') %> 
-      <% include layout/sidebar.ejs %> 
-      <% include layout/footer.ejs %> 
-      <% include layout/js.ejs %>
+      <%- include('layout/sidebar.ejs')  %> 
+      <%- include('layout/footer.ejs')  %> 
+      <%- include('layout/js.ejs')  %>
     </div>
     <!-- ./wrapper -->
   </body>
