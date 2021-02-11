@@ -9,24 +9,23 @@ const db = new Mysql(mysqlConf);
 
 const dbTable = '.users';
 
-function sqlQuery(sql,res) {
+function sqlQuery(sql, res) {
   db.query(sql)
-    .then(data => {
+    .then((data) => {
       const result = data[0];
       res.status(200).json(result);
     })
-    .catch(err => {
+    .catch((err) => {
       const errorMsg = err.message ? err.message : JSON.stringify(err);
       res.status(400).end(errorMsg);
     });
 }
 
 router.get('/', (req, res, next) => {
-  res.render('base', { pageToRender: 'userAdmin', label: 'userAdmin', path: 'userAdmin/'});
+  res.render('base', { pageToRender: 'userAdmin', label: 'userAdmin', path: 'userAdmin/' });
 });
 
 router.get('/list', (req, res, next) => {
-  //const sql = "select id, ifnull(userName,'') userName, firstName, lastName, email FROM " + mysqlConf.database + dbTable + ' where deactivated is null';
   const sql = `select u.id, ifnull(u.userName,'') userName, u.firstName, u.lastName, u.email, concat('[', ifnull(group_concat(ua.name),''), ']') as access \
       FROM ${mysqlConf.database}${dbTable} u \
       left join ${mysqlConf.database}.user_useraccess uua on u.id = uua.userid \
@@ -55,7 +54,6 @@ router.patch('/:id', (req, res, next) => {
       return false;
   }
 
-
   // if it's the password, a special set of rules and convert from plaintext to hashed format.
   if (req.body.valueToChange.toLowerCase() === 'password') {
     if (/^.{0,6}$/u.test(db.escape(req.body.newValue))) {
@@ -65,7 +63,16 @@ router.patch('/:id', (req, res, next) => {
     req.body.newValue = bcrypt.hashSync(req.body.newValue, 10);
   }
 
-  const sql = 'UPDATE ' + mysqlConf.database + dbTable + ' SET ' + req.body.valueToChange + '=' + db.escape(req.body.newValue) + ' where id = ' + db.escape(req.params.id);
+  const sql =
+    'UPDATE ' +
+    mysqlConf.database +
+    dbTable +
+    ' SET ' +
+    req.body.valueToChange +
+    '=' +
+    db.escape(req.body.newValue) +
+    ' where id = ' +
+    db.escape(req.params.id);
   sqlQuery(sql, res);
 });
 
@@ -80,13 +87,33 @@ router.delete('/:id', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-  if (req.body.userName === undefined || req.body.firstName === undefined || req.body.lastName === undefined || req.body.email === undefined || req.body.password === undefined) {
+  if (
+    req.body.userName === undefined ||
+    req.body.firstName === undefined ||
+    req.body.lastName === undefined ||
+    req.body.email === undefined ||
+    req.body.password === undefined
+  ) {
     res.status(400).end();
     return false;
   }
 
   const password = bcrypt.hashSync(req.body.password, 10);
-  const sql = 'INSERT INTO ' + mysqlConf.database + dbTable + ' (userName, firstName, lastName, email, password) values (' + db.escape(req.body.userName) + ', ' + db.escape(req.body.firstName) + ', ' + db.escape(req.body.lastName) + ', ' + db.escape(req.body.email) + ', ' + db.escape(password) + ')';
+  const sql =
+    'INSERT INTO ' +
+    mysqlConf.database +
+    dbTable +
+    ' (userName, firstName, lastName, email, password) values (' +
+    db.escape(req.body.userName) +
+    ', ' +
+    db.escape(req.body.firstName) +
+    ', ' +
+    db.escape(req.body.lastName) +
+    ', ' +
+    db.escape(req.body.email) +
+    ', ' +
+    db.escape(password) +
+    ')';
   sqlQuery(sql, res);
 });
 
@@ -103,11 +130,23 @@ router.patch('/useraccess/:userid', (req, res, next) => {
 
   let sql;
   if (req.body.newValue === 'true') {
-    sql = 'insert into ' + mysqlConf.database + '.user_useraccess (userid, useraccessid) \
-    select ' + db.escape(req.params.userid) + ',id from ' + mysqlConf.database + '.useraccess where name = ' + db.escape(req.body.valueToChange);
+    sql =
+      'insert into ' +
+      mysqlConf.database +
+      '.user_useraccess (userid, useraccessid) \
+    select ' +
+      db.escape(req.params.userid) +
+      ',id from ' +
+      mysqlConf.database +
+      '.useraccess where name = ' +
+      db.escape(req.body.valueToChange);
   } else {
-    sql = 'delete uua from user_useraccess uua join useraccess ua on uua.useraccessid = ua.id \
-    where uua.userid = ' + db.escape(req.params.userid) + ' and ua.name = ' + db.escape(req.body.valueToChange);
+    sql =
+      'delete uua from user_useraccess uua join useraccess ua on uua.useraccessid = ua.id \
+    where uua.userid = ' +
+      db.escape(req.params.userid) +
+      ' and ua.name = ' +
+      db.escape(req.body.valueToChange);
   }
   sqlQuery(sql, res);
 });
