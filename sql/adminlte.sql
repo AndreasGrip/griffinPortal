@@ -14,7 +14,7 @@ CREATE TABLE `user_useraccess` (
   `useraccessid` int(11) NOT NULL,
   `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=256 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `useraccess` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -28,7 +28,7 @@ CREATE TABLE `useraccess` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `Name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `userdata` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -36,7 +36,7 @@ CREATE TABLE `userdata` (
   `userdatatypeid` int(11) NOT NULL,
   `value` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `userdatatypes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -45,7 +45,7 @@ CREATE TABLE `userdatatypes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='	';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='	';
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -59,7 +59,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`userName`)
-) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 insert into
     users (userName, password, firstName, lastName, email)
@@ -75,16 +75,8 @@ values
 insert into
     useraccess (name, description, URL, type, icon, sortorder)
 values
-    ('HomePage', 'Home', '/', 'ALL', 'fa-home', 1);
-
-insert into
-    useraccess (name, description, URL, type, icon, sortorder)
-values
-    ('UserEdit', 'Admin Users', '/userAdmin/', 'ALL', 'fa-user-circle', 2);
-
-insert into
-    useraccess (name, description, URL, type, icon, sortorder)
-values
+    ('HomePage', 'Home', '/', 'ALL', 'fa-home', 1),
+    ('UserEdit', 'Admin Users', '/userAdmin/', 'ALL', 'fa-user-circle', 2),
     ('UserAccess', 'Access Levels', '/userAccess/', 'ALL', 'fa-unlock-alt', 3);
     
 insert into
