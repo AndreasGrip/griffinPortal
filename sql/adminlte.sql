@@ -4,6 +4,10 @@ CREATE DATABASE `adminlte`
 
 USE `adminlte`;
 
+CREATE USER 'adminlte'@'localhost' IDENTIFIED BY 'adminlte918273465';
+GRANT ALL PRIVILEGES ON adminlte.* TO 'adminlte'@'localhost';
+FLUSH PRIVILEGES;
+
 CREATE TABLE `user_useraccess` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
