@@ -4,6 +4,7 @@ CREATE DATABASE `adminlte`
 
 USE `adminlte`;
 
+DROP USER IF EXISTS 'adminlte'@'localhost';
 CREATE USER 'adminlte'@'localhost' IDENTIFIED BY 'adminlte918273465';
 GRANT ALL PRIVILEGES ON adminlte.* TO 'adminlte'@'localhost';
 FLUSH PRIVILEGES;
