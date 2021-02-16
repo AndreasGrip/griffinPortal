@@ -146,7 +146,6 @@ function uiSSelCreate(selected, allOptionsGlobalVariable, apiSaveSelected) {
     returnString += '</option>';
   }
   returnString += '</select>';
-  console.log(returnString);
   return returnString;
 }
 
@@ -166,22 +165,13 @@ function uiCBCreateChange(checkbox, uncheckedValue, checkedValue, api) {
   const newValue = checkbox.checked ? checkedValue : uncheckedValue;
   checkbox.value = checkbox.checked ? checkedValue : uncheckedValue;
 
-  $.ajax({
-    url: url,
-    type: 'PATCH',
-    data: {
-      valueToChange: valueToChange,
-      newValue: newValue
-    }
-  })
-    .done(data => {
-      checkbox.value = checkbox.checked ? checkedValue : uncheckedValue;
-    })
-    .fail(err => {
-      checkbox.checked = newValue === checkedValue ? 0 : 1;
-      alert('Fail to set ' + valueToChange + ': ' + 'true');
-    })
-    .always(() => {});
+  function successFunc() {
+    checkbox.value = checkbox.checked ? checkedValue : uncheckedValue;
+  }
+  function runAfterFunc() {
+    checkbox.checked = newValue === checkedValue ? 0 : 1;
+  }
+  dataPatch(url, { valueToChange: valueToChange, newValue: newValue }, successFunc, runAfterFunc);
 }
 
 function uiCBCreate(setValue, uncheckedValue, checkedValue, api) {
@@ -204,45 +194,21 @@ function uisSel2CreateChange(selectObj, api) {
   const url = api ? api + '/' + rowId : rowId;
   const valueToChange = columnName;
   const newValue = selectObj.selectedOptions[0].value;
-  $.ajax({
-    url: url,
-    type: 'PATCH',
-    data: {
-      valueToChange: valueToChange,
-      newValue: newValue
-    }
-  })
-    .done(data => {})
-    .fail(err => {
-      alert('Fail to set ' + valueToChange + ': ' + 'true');
-    })
-    .always(() => {});
+  patchData(url, { valueToChange: valueToChange, newValue: newValue }, doNothing, doNothing);
 }
 
 function uiSSelCreateChange(setValue, uncheckedValue, checkedValue, api) {
-  let rowId = select.parentElement.parentNode.firstElementChild.innerText;
-  let columnName = Object.keys(tableConfig)[$(select).parent()[0]._DT_CellIndex.column];
-  let url = api ? api + '/' + rowId : rowId;
-  let valueToChange = columnName;
-  let newValue = select.selectedOptions[0].value;
-  $.ajax({
-    url: url,
-    type: 'PATCH',
-    data: {
-      valueToChange: valueToChange,
-      newValue: newValue
-    }
-  })
-    .done(data => {})
-    .fail(err => {
-      alert('Fail to set ' + valueToChange + ': ' + 'true');
-    })
-    .always(() => {});
+  const rowId = setValue.parentElement.parentNode.firstElementChild.innerText;
+  const columnName = Object.keys(tableConfig)[$(setValue).parent()[0]._DT_CellIndex.column];
+  const url = api ? api + '/' + rowId : rowId;
+  const valueToChange = columnName;
+  const newValue = setValue.selectedOptions[0].value;
+  patchData(url, { valueToChange: valueToChange, newValue: newValue }, doNothing, doNothing);
 }
 
 function uiMSelCreate(selected, allObjects, api) {
   // constCreate object with all available objects
-  let objectList = {};
+  const objectList = {};
   for (const val in allObjects) {
     objectList[allObjects[val].name] = false;
   }
@@ -308,19 +274,7 @@ function uiMSelCreateAdd(select, api) {
 
   select.options.remove(select.selectedIndex);
 
-  $.ajax({
-    url: api + '/' + rowId,
-    type: 'PATCH',
-    data: {
-      valueToChange: valueToChange,
-      newValue: true
-    }
-  })
-    .done(data => {})
-    .fail(err => {
-      alert('Fail to set ' + valueToChange + ': ' + 'true');
-    })
-    .always(() => {});
+  patchData(api + '/' + rowId, { valueToChange: valueToChange, newValue: true }, doNothing, doNothing);
 }
 function uiMSelCreateDel(select, api) {
   const rowId = select.parentElement.parentElement.parentElement.parentNode.firstElementChild.innerText;
@@ -335,19 +289,7 @@ function uiMSelCreateDel(select, api) {
   select.parentNode.parentNode.childNodes[1].options.add(opt);
   console.log(select);
   select.parentNode.removeChild(select);
-  $.ajax({
-    url: api + '/' + rowId,
-    type: 'PATCH',
-    data: {
-      valueToChange: valueToChange,
-      newValue: false
-    }
-  })
-    .done(data => {})
-    .fail(err => {
-      alert('Fail to set ' + valueToChange + ': ' + 'false');
-    })
-    .always(() => {});
+  patchData(api + '/' + rowId, { valueToChange: valueToChange, newValue: false }, doNothing, doNothing);
 }
 
 function uiBtnCreate(label, functionString, type, value) {
@@ -400,7 +342,7 @@ function createContactView(data, config) {
 
 function createTable(data, config) {
   let columns = 0;
-  const editable = []
+  const editable = [];
   let respond = '';
   if (data.length > 0) {
     respond += '<table class="table table-bordered" id="list">';
@@ -528,25 +470,19 @@ function createTable(data, config) {
     document.body.append(t);
 
     // make things editable by double click on them
-    $('.tdeditable').dblclick(function() {
+    $('.tdeditable').dblclick(function () {
       var OriginalContent = $(this).text();
       $(this).addClass('cellEditing');
       $(this).html('<input type="text" value="' + OriginalContent + '" />');
+      $(this).children().first().focus();
       $(this)
         .children()
         .first()
-        .focus();
-      $(this)
-        .children()
-        .first()
-        .keypress(function(e) {
+        .keypress(function (e) {
           if (e.which == 13) {
             var newContent = $(this).val();
             // console.log($(this).parent()[0]);
-            const rowId = $(this)
-              .parent()
-              .parent()
-              .find('td:eq(0)')[0].innerHTML;
+            const rowId = $(this).parent().parent().find('td:eq(0)')[0].innerHTML;
             // Please don't judge me to hard for this f*cking mess. Future me is already..
             // (My eye hurts //Future Angr)
             // let columnName = Object.keys(config)[$(this).parent()[0]._DT_CellIndex.column];
@@ -572,31 +508,19 @@ function createTable(data, config) {
 
             if (regex.test(newContent) !== true) {
               alert(newContent + ' did not match regex ' + pattern);
-              $(this)
-                .parent()
-                .text(OriginalContent);
+              $(this).parent().text(OriginalContent);
             } else {
               const content = $(this).parent();
-              $.ajax({
-                url: rowId,
-                type: 'PATCH',
-                data: {
-                  valueToChange: columnName,
-                  newValue: newContent
-                }
-              })
-                .done(data => {
+              patchData(
+                rowId,
+                { valueToChange: columnName, newValue: newContent },
+                function () {
                   content.text(newContent);
-                })
-                .fail(err => {
-                  alert('Fail to change ' + columnName + ': ' + OriginalContent + ' into ' + newContent);
-                  content.text(OriginalContent);
-                })
-                .always(() => {
-                  $(this)
-                    .parent()
-                    .removeClass('cellEditing');
-                });
+                },
+                function () {
+                  $(this).parent().removeClass('cellEditing');
+                }
+              );
             }
             // console.log($(this).parent()[0].parent()[0].find("td:eq(0)").innerHTML);
           }
@@ -604,23 +528,16 @@ function createTable(data, config) {
       $(this)
         .children()
         .first()
-        .blur(function() {
-          $(this)
-            .parent()
-            .text(OriginalContent);
-          $(this)
-            .parent()
-            .removeClass('cellEditing');
+        .blur(function () {
+          $(this).parent().text(OriginalContent);
+          $(this).parent().removeClass('cellEditing');
         });
     });
 
     const ta = $('#list').dataTable({ paging: false });
 
     // Datatabels adds a few layers that need to be included with the table.
-    respond = ta
-      .parent()
-      .parent()
-      .parent();
+    respond = ta.parent().parent().parent();
   } else {
     respond += 'Cant load List';
   }
@@ -633,21 +550,13 @@ function listUpdate() {
     tableConfig[key].label = tableConfig[key].label === undefined ? key : tableConfig[key].label;
   }
 
-  $.ajax({
-    url: 'list',
-    type: 'GET',
-    dataType: 'json'
-  })
-    .done(dataObj => {
-      // Clear the container if there is anything there
-      $('#tableContainer').empty();
+  function runAfterFunc() {
+    $('#tableContainer').empty();
+    const respond = createTable(window.adminLTE.list, tableConfig);
+    $('#tableContainer').append(respond);
+  }
 
-      const respond = createTable(dataObj, tableConfig);
-      $('#tableContainer').append(respond);
-    })
-    .fail(err => {
-      alert('Fail to delete ' + err.message);
-    });
+  getData('list', 'list', runAfterFunc);
 }
 
 function del(id) {
@@ -656,12 +565,12 @@ function del(id) {
     url: id,
     type: 'DELETE',
     dataType: 'json',
-    data: {}
+    data: {},
   })
-    .done(data => {
+    .done((data) => {
       listUpdate();
     })
-    .fail(err => {
+    .fail((err) => {
       alert('Fail to delete ' + err.message);
     })
     .always(() => {
@@ -687,21 +596,7 @@ function addSave(label) {
     }
   }
 
-  $('#waitSpinner').modal();
-  $.ajax({
-    url: '',
-    type: 'POST',
-    data: addData
-  })
-    .done(data => {
-      listUpdate();
-    })
-    .fail(err => {
-      alert('Fail to add ' + err.message);
-    })
-    .always(() => {
-      $('#waitSpinner').modal('hide');
-    });
+  postData('', addData, listUpdate, doNothing);
 }
 
 // let tableobject = table2jsonObj(document.getElementbyId('mytable')); // [{header1: a1, header2: b1},{header1: a2, header2: b2}]
@@ -760,10 +655,8 @@ function addButton() {
   const label = 'Add';
   const okButton = {
     label: 'Add',
-    function: "addSave('" + label + "')"
+    function: "addSave('" + label + "')",
   };
   let closeAllButtonObj = createPopupInput(label, tableConfig, okButton);
-  $(closeAllButtonObj)
-    .appendTo($('.content-wrapper')[0])
-    .modal();
+  $(closeAllButtonObj).appendTo($('.content-wrapper')[0]).modal();
 }

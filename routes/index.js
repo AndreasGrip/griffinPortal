@@ -7,17 +7,23 @@ const db = new Mysql(mysqlConf);
 
 /* GET home page. */
 router.get('/', (req, res, next) => {
-  res.render('index');
-  //  res.render('index', { title: 'Express' });
+  if (req.session.settings && req.session.settings.Startpage) {
+    res.redirect(req.session.settings.Startpage);
+  } else {
+    res.render('index');
+  }
 });
 
 router.get('/sidebar', (req, res, next) => {
-  const sql = 'select description, URL, icon  from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ') order by sortorder';
+  const sql =
+    'select description, URL, icon  from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' +
+    req.session.user.id +
+    ') order by sortorder';
   db.query(sql)
-    .then(result => {
+    .then((result) => {
       res.json(result[0]);
     })
-    .catch(err => {
+    .catch((err) => {
       res.json(err);
     });
 });

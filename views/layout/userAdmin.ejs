@@ -1,166 +1,145 @@
-<% include part/pagetop.ejs %>
+<%- include('part/pagetop.ejs') %>
 
-<script type="text/javascript">
-  let tableConfig = {
-    id: {
-      label: 'Id'
-    },
-    userName: {
-      label: 'UserName',
-      editable: true,
-      validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-      icon: 'fa-user-circle',
-      addNew: true
-    },
-    firstName: {
-      label: 'FirstName',
-      editable: true,
-      validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-      icon: 'fa-user-circle',
-      addNew: true
-    },
-    lastName: {
-      label: 'LastName',
-      editable: true,
-      validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-      icon: 'fa-user-circle',
-      addNew: true
-    },
-    email: {
-      label: 'Email',
-      editable: true,
-      validation: '/[^@]+@[^\.]+\..+/',
-      icon: 'fa-envelope ',
-      addNew: true
-    },
-    access: {
-      label: 'Access',
-      icon: 'fa-handshake-o',
-      content: 'multiselect({access},allAccess)',
-      api: 'useraccess'
-    },
-    password: {
-      label: 'Password',
-      validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-      icon: 'fa-key',
-      addNew: true,
-      content: 'button(ChangePassword,danger)',
-      function: 'changepasswordShow({id})'
-    },
-    delete: {
-      label: 'Delete',
-      function: 'del({id})',
-      content: 'button(Del,danger)'
-    }
-  };
-
-  <% include part/functions.js %>
-
-    $(function () {
-      window.adminLTE = {};
-      $.ajax({
-        url: 'useraccess',
-        type: 'GET',
-        dataType: 'json'
-      })
-        .done(data => {
-          window.adminLTE.allAccess = data;
-        })
-        .fail(data => {
-          alert('failed to get access levels');
-        })
-        .always(() => {
-          initPage();
-        });
-    });
-
-  function initPage() {
-    listUpdate();
-
-    let okButtonConfig = {};
-    okButtonConfig.label = 'Add';
-    okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
-    let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
-    $(addPopup).appendTo($('.content-wrapper')[0]);
-
-    okButtonConfig.function = 'changePassword()';
-    okButtonConfig.label = 'ChangePassword';
-    changepasswordConfig = {
+  <script type="text/javascript">
+    let tableConfig = {
+      id: {
+        label: 'Id'
+      },
+      userName: {
+        label: 'UserName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+      },
+      firstName: {
+        label: 'FirstName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+      },
+      lastName: {
+        label: 'LastName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+      },
+      email: {
+        label: 'Email',
+        editable: true,
+        validation: '/[^@]+@[^\.]+\..+/',
+        icon: 'fa-envelope ',
+        addNew: true
+      },
+      access: {
+        label: 'Access',
+        icon: 'fa-handshake-o',
+        content: 'multiselect({access},allAccess)',
+        api: 'useraccess'
+      },
+      startPage: {
+        label: 'StartPage',
+        editable: true,
+        icon: 'fa-home',
+        addNew: true
+      },
       password: {
         label: 'Password',
-        validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
         icon: 'fa-key',
-        addNew: true
+        addNew: true,
+        content: 'button(ChangePassword,danger)',
+        function: 'changepasswordShow({id})'
+      },
+      delete: {
+        label: 'Delete',
+        function: 'del({id})',
+        content: 'button(Del,danger)'
       }
     };
-    let passwordPopup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
-    $(passwordPopup).appendTo($('.content-wrapper')[0]);
-/*
-    $(".multiselect").multiselect({
-      onChange: (option, checked, select) => {
-        let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
-        let optionToChange = $(option).val();
-        let valueSet = checked;
-        $.ajax({
-          url: 'useraccess/' + userId,
-          type: 'PATCH',
-          dataType: 'json',
-          data: {
-            accesstochange: optionToChange,
-            state: valueSet
-          }
-        })
-      }
-    });*/
-  }
 
-  let changeId = 0;
+  <%- include('part/functions.js') %>
 
-  function changepasswordShow(id) {
-    changeId = id;
-    $('#ChangePasswordForm').modal('show');
-  }
+      document.addEventListener('DOMContentLoaded', function () {
+        window.adminLTE = {};
+        getData('useraccess', 'allAccess', initPage);
+      }, false);
 
-  function changePassword() {
-    let passwd = $('#ChangePassword-password')[0].value;
-    $('#waitSpinner').modal();
-    $.ajax({
-      url: changeId,
-      type: 'PATCH',
-      dataType: 'json',
-      data: {
-        valueToChange: 'password',
-        newValue: passwd
-      }
-    })
-      .done(data => {
-        $('#ChangePasswordForm').modal('hide');
-      })
-      .fail(() => {
-        alert('Failed to change password');
-      })
-      .always(() => {
-        $('#waitSpinner').modal('hide');
-        $('#ChangePassword-password')[0].value = '';
-      });
-  }
+    function initPage() {
+      listUpdate();
 
+      let okButtonConfig = {};
+      okButtonConfig.label = 'Add';
+      okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
+      let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
+      $(addPopup).appendTo($('.content-wrapper')[0]);
 
-  function addContentUpdate() {
-    let respons = '';
-    for (let key of Object.keys(tableConfig)) {
-      if (tableConfig[key].addNew) {
-        respons += '<div class="md-form mb-5">';
-        if (tableConfig[key].icon) {
-          respons += '<i class="fa ' + tableConfig[key].icon + ' prefix grey-text"></i>';
+      okButtonConfig.function = 'changePassword()';
+      okButtonConfig.label = 'ChangePassword';
+      changepasswordConfig = {
+        password: {
+          label: 'Password',
+          validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+          icon: 'fa-key',
+          addNew: true
         }
-        respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
-        respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
-        respons += '</div>';
-      }
+      };
+      let passwordPopup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+      $(passwordPopup).appendTo($('.content-wrapper')[0]);
+      /*
+          $(".multiselect").multiselect({
+            onChange: (option, checked, select) => {
+              let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
+              let optionToChange = $(option).val();
+              let valueSet = checked;
+              $.ajax({
+                url: 'useraccess/' + userId,
+                type: 'PATCH',
+                dataType: 'json',
+                data: {
+                  accesstochange: optionToChange,
+                  state: valueSet
+                }
+              })
+            }
+          });*/
     }
-    $('#AddFormContent').innerHTML(respons);
-  }
+
+    let changeId = 0;
+
+    function changepasswordShow(id) {
+      changeId = id;
+      $('#ChangePasswordForm').modal('show');
+    }
+
+    function changePassword() {
+      let passwd = $('#ChangePassword-password')[0].value;
+      function sucessFunc() {
+        $('#ChangePasswordForm').modal('hide');
+      }
+      function runAfterFunc() {
+        $('#ChangePassword-password')[0].value = '';
+      }
+      patchData(changeId, { valueToChange: 'password', newValue: passwd }, sucessFunc, runAfterFunc)
+    }
 
 
-</script>
+    function addContentUpdate() {
+      let respons = '';
+      for (let key of Object.keys(tableConfig)) {
+        if (tableConfig[key].addNew) {
+          respons += '<div class="md-form mb-5">';
+          if (tableConfig[key].icon) {
+            respons += '<i class="fa ' + tableConfig[key].icon + ' prefix grey-text"></i>';
+          }
+          respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
+          respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
+          respons += '</div>';
+        }
+      }
+      $('#AddFormContent').innerHTML(respons);
+    }
+
+  </script>

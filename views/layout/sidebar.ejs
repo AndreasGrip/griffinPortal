@@ -288,19 +288,16 @@
 <div class="control-sidebar-bg"></div>
 
 <script type="text/javascript">
-  $(function() {
+  document.addEventListener('DOMContentLoaded', function() {
     sidebarUpdate();
-  });
+  },false);
 
   function sidebarUpdate() {
-    $.ajax({
-      url: '/sidebar',
-      type: 'GET',
-      dataType: 'json'
-    }).done(dataObj => {
-      for (let menurow of dataObj) {
+    function successFunk() {
+      for (let menurow of window.adminLTE.sidebar) {
         $('#menuoptions').append('<a href="' + menurow.URL + '"><i class="fa ' + menurow.icon + '"></i> <span>' + menurow.description + '</span></a>');
       }
-    });
+    }
+    getData('/sidebar', 'sidebar', successFunk);
   }
 </script>
