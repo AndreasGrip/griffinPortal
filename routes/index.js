@@ -12,10 +12,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/sidebar', (req, res, next) => {
-  const sql =
-    'select description, URL, icon  from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' +
-    req.session.user.id +
-    ') order by sortorder';
+  const sql = 'select description, URL, icon  from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ') order by sortorder';
   db.query(sql)
     .then(result => {
       res.json(result[0]);

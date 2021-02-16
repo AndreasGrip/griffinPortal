@@ -1,8 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable max-lines-per-function */
-/* eslint-disable prefer-destructuring */
-/* eslint-disable no-console */
-/* eslint-disable linebreak-style */
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const mysqlConf = require('../agr_conf/mysql_config');
@@ -24,20 +19,16 @@ router.get('/logout/', (req, res, next) => {
 
 router.get('/login/', (req, res, next) => {
   console.log('login');
-  if (req.session) {
-    if (req.session.user !== undefined) {
-      if (req.session.user.id !== undefined) {
-        return res.redirect('../');
-      }
-    }
+  if (req.session && req.session.user !== undefined && req.session.user.id !== undefined) {
+    return res.redirect('../');
+  } else {
+    res.render('login');
   }
-  res.render('login');
 });
 
 router.post('/login/', (req, res, next) => {
   console.log('logpost');
-  const query =
-    'select id, userName, salt, password, firstName, lastName, email from ' + mysqlConf.database + '.users where email = ' + db.escape(req.body.email);
+  const query = 'select id, userName, salt, password, firstName, lastName, email from ' + mysqlConf.database + '.users where (email = ' + db.escape(req.body.email) + ' or userName = ' + db.escape(req.body.email) + ') and deactivated is null';
 
   db.query(query)
     .then(data => {
@@ -55,8 +46,7 @@ router.post('/login/', (req, res, next) => {
     })
     .then(() => {
       if (req.session.user) {
-        const sql =
-          'select URL, type from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ');';
+        const sql = 'select URL, type from adminlte.useraccess where id in (select useraccessid from user_useraccess where userid = ' + req.session.user.id + ');';
 
         db.query(sql).then(data => {
           req.session.access = {};
@@ -77,10 +67,7 @@ router.post('/login/', (req, res, next) => {
 router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*javascripts).*$/u, (req, res, next) => {
   // console.log('root get ', req.url);
   if (req.session) {
-    if (req.session.user === undefined) {
-      return res.redirect('/login/');
-    }
-    if (req.session.user.id === undefined) {
+    if (req.session.user === undefined || !req.session.user.id) {
       return res.redirect('/login/');
     }
     const url = {};
@@ -91,13 +78,13 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
     let result = {};
 
     switch (true) {
-      case !!/(^\/.+\/)(.*)/u.exec(req.path):
-        result = req.path.match(/(^\/.*\/)(.*)/u);
+      case !!/(^\/\w+\/)(\w*)/u.exec(req.path):
+        result = req.path.match(/(^\/\w*\/)(\w*)/u);
         url.path = result[1];
         url.type = result[2];
         break;
-      case !!/(^\/)(.*)/u.exec(req.path):
-        result = req.path.match(/(^\/)(.*)/u);
+      case !!/(^\/)(\w*)/u.exec(req.path):
+        result = req.path.match(/(^\/)(\w*)/u);
         url.path = result[1];
         url.type = result[2];
         break;
@@ -106,7 +93,6 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
     }
     if (req.session.access[url.path]) {
       if (req.session.access[url.path] === 'ALL') {
-        console.log('test');
         next();
       } else {
         for (const type of req.session.access[url.path].split(',')) {

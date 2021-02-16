@@ -1,13 +1,26 @@
-https://www.slightedgecoder.com/2018/01/18/formatting-ejs-file-vs-code-visual-studio-code/
+#This is Extension that I use to speed upp coding. It's not for everyone but test using them for a day or two to se if they fit your needs.
 
-Node.js Extension Pack
+General:
 Bracket Pair Colorizer 2
-Auto Renamee Tag
-Beautify
+Prettier - Code formatter
 CSS Formater
+
+Node:
+Node.js Extension Pack
+Path Intellisense
+
+
+EJS:
+https://www.slightedgecoder.com/2018/01/18/formatting-ejs-file-vs-code-visual-studio-code/
 EJS language support
-GitLens
+
+HTML:
+Auto Renamee Tag
+
+MySQL:
 MySQL Syntax
 Mysql
-Path Intellisense
-Prettier
+
+GIT:
+GitLens
+Git Graph
