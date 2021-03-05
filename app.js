@@ -3,6 +3,7 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+
 const morgan = require('morgan');
 const winstonLoader = require('winston-sugar');
 winstonLoader.config('./config/winston.json');
@@ -26,13 +27,16 @@ console.error = (...args) => log.error(...args);
 console.debug = (...args) => log.debug(...args);
 
 const session = require('express-session');
-const MemoryStore = require('memorystore')(session); // To avoid memory leaks
+const FileStore = require('session-file-store')(session); // store session in files rather than memory to allow restore session after restart of program.
+
+// const MemoryStore = require('memorystore')(session); // To avoid memory leaks
 
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
+
 const userAdminRouter = require('./routes/userAdmin');
 const userAccessRouter = require('./routes/userAccess');
 
@@ -52,17 +56,23 @@ app.use(
 app.use(cookieParser());
 
 // AGR start
-app.use(
-  session({
-    cookie: { maxAge: 43200000 },
-    store: new MemoryStore({
-      checkPeriod: 43200000, // prune expired entries every 12h
-    }),
-    secret: 'skokanonsomsatan',
-    resave: true,
-    saveUninitialized: false,
-  })
-);
+const sessionObj = {
+  // cookie: {maxAge: 60 * 60 * 12 * 1000 },
+  cookie: { sameSite: 'strict' },
+  secret: 'RQxvg8MYP8JGbwaLPEst9YC7LJe65SwrTftbKsF3XLkmpaA2P84RCG7pugmRzZfS',
+  resave: true,
+  saveUninitialized: false,
+};
+
+if (typeof MemoryStore !== 'undefined') {
+  // prune expired entries every 12h
+  sessionObj.store = new MemoryStore({ checkPeriod: 60 * 60 * 12 * 1000 });
+} else if (typeof FileStore !== 'undefined') {
+  sessionObj.store = new FileStore({ ttl: 60 * 60 * 12 * 1000 });
+}
+
+app.use(session(sessionObj));
+
 app.use(
   bodyParser.urlencoded({
     extended: false,
