@@ -18,21 +18,8 @@
     <button class="btn btn-primary btn-rounded mb-4" onclick="addButton()">Add</button>
   </div>
 
-  <div class="modal" id="waitSpinner" tabindex="-1" role="dialog" aria-labelledby="waitSpinnerTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="waitSpinnerTitle"></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body hcenter">
-          <div class="loader"></div>
-        </div>
-        <div class="modal-footer"></div>
-      </div>
-    </div>
+  <div class="gModal show" id="spinner">
+    <div class="spinningWhel"></div>
   </div>
 
   <!-- Main content -->

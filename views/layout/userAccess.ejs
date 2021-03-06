@@ -51,8 +51,6 @@
       }
     };
 
-  <%- include('part/functions.js') %>
-
       document.addEventListener('DOMContentLoaded', function () {
         initPage();
       }, false);
@@ -64,9 +62,6 @@
       let okButtonConfig = {};
       okButtonConfig.label = 'Add';
       okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
-      let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
-      $(addPopup).appendTo($('.content-wrapper')[0]);
-
     }
 
 

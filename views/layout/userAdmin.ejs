@@ -1,145 +1,125 @@
 <%- include('part/pagetop.ejs') %>
 
-  <script type="text/javascript">
-    let tableConfig = {
-      id: {
-        label: 'Id'
-      },
-      userName: {
-        label: 'UserName',
-        editable: true,
-        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-        icon: 'fa-user-circle',
-        addNew: true
-      },
-      firstName: {
-        label: 'FirstName',
-        editable: true,
-        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-        icon: 'fa-user-circle',
-        addNew: true
-      },
-      lastName: {
-        label: 'LastName',
-        editable: true,
-        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-        icon: 'fa-user-circle',
-        addNew: true
-      },
-      email: {
-        label: 'Email',
-        editable: true,
-        validation: '/[^@]+@[^\.]+\..+/',
-        icon: 'fa-envelope ',
-        addNew: true
-      },
-      access: {
-        label: 'Access',
-        icon: 'fa-handshake-o',
-        content: 'multiselect({access},allAccess)',
-        api: 'useraccess'
-      },
-      startPage: {
-        label: 'StartPage',
-        editable: true,
-        icon: 'fa-home',
-        addNew: true
-      },
-      password: {
-        label: 'Password',
-        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-        icon: 'fa-key',
-        addNew: true,
-        content: 'button(ChangePassword,danger)',
-        function: 'changepasswordShow({id})'
-      },
-      delete: {
-        label: 'Delete',
-        function: 'del({id})',
-        content: 'button(Del,danger)'
-      }
-    };
-
-  <%- include('part/functions.js') %>
-
-      document.addEventListener('DOMContentLoaded', function () {
-        window.adminLTE = {};
-        getData('useraccess', 'allAccess', initPage);
-      }, false);
-
-    function initPage() {
-      listUpdate();
-
-      let okButtonConfig = {};
-      okButtonConfig.label = 'Add';
-      okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
-      let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
-      $(addPopup).appendTo($('.content-wrapper')[0]);
-
-      okButtonConfig.function = 'changePassword()';
-      okButtonConfig.label = 'ChangePassword';
-      changepasswordConfig = {
+<script type="text/javascript">
+      let tableConfig = {
+        id: {
+          label: 'Id'
+        },
+        userName: {
+          label: 'UserName',
+          editable: true,
+          validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+          icon: 'fa-user-circle',
+          addNew: true
+        },
+        firstName: {
+          label: 'FirstName',
+          editable: true,
+          validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+          icon: 'fa-user-circle',
+          addNew: true
+        },
+        lastName: {
+          label: 'LastName',
+          editable: true,
+          validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+          icon: 'fa-user-circle',
+          addNew: true
+        },
+        email: {
+          label: 'Email',
+          editable: true,
+          validation: '/[^@]+@[^\.]+\..+/',
+          icon: 'fa-envelope',
+          addNew: true
+        },
+        access: {
+          label: 'Access',
+          icon: 'fa-handshake-o',
+          content: 'multiselect({access},allAccess)',
+          api: 'useraccess'
+        },
+        startPage: {
+          label: 'StartPage',
+          editable: true,
+          icon: 'fa-home',
+          addNew: true
+        },
         password: {
           label: 'Password',
-          validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+          validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
           icon: 'fa-key',
-          addNew: true
+          addNew: true,
+          content: 'button(ChangePassword,danger)',
+          function: 'changepasswordShow({id})'
+        },
+        delete: {
+          label: 'Delete',
+          function: 'del({id})',
+          content: 'button(Del,danger)'
         }
       };
-      let passwordPopup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
-      $(passwordPopup).appendTo($('.content-wrapper')[0]);
-      /*
-          $(".multiselect").multiselect({
-            onChange: (option, checked, select) => {
-              let userId = $(option).parent().parent().parent().parent()[0].childNodes[0].innerText;
-              let optionToChange = $(option).val();
-              let valueSet = checked;
-              $.ajax({
-                url: 'useraccess/' + userId,
-                type: 'PATCH',
-                dataType: 'json',
-                data: {
-                  accesstochange: optionToChange,
-                  state: valueSet
-                }
-              })
-            }
-          });*/
-    }
 
-    let changeId = 0;
-
-    function changepasswordShow(id) {
-      changeId = id;
-      $('#ChangePasswordForm').modal('show');
-    }
-
-    function changePassword() {
-      let passwd = $('#ChangePassword-password')[0].value;
-      function sucessFunc() {
-        $('#ChangePasswordForm').modal('hide');
-      }
-      function runAfterFunc() {
-        $('#ChangePassword-password')[0].value = '';
-      }
-      patchData(changeId, { valueToChange: 'password', newValue: passwd }, sucessFunc, runAfterFunc)
-    }
+        document.addEventListener('DOMContentLoaded', function () {
+          const onSuccess = storeDatafunction('allAccess');
+          getData('useraccess', onSuccess , initPage);
+        }, false);
 
 
-    function addContentUpdate() {
-      let respons = '';
-      for (let key of Object.keys(tableConfig)) {
-        if (tableConfig[key].addNew) {
-          respons += '<div class="md-form mb-5">';
-          if (tableConfig[key].icon) {
-            respons += '<i class="fa ' + tableConfig[key].icon + ' prefix grey-text"></i>';
+
+      function initPage() {
+        listUpdate();
+
+        let okButtonConfig = {};
+  /*      okButtonConfig.label = 'Add';
+        okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
+        let addPopup = createPopupInput('Add', tableConfig, okButtonConfig);
+        $(addPopup).appendTo($('.content-wrapper')[0]);
+  */
+  /*
+        okButtonConfig.function = 'changePassword()';
+        okButtonConfig.label = 'ChangePassword';
+        changepasswordConfig = {
+          password: {
+            label: 'Password',
+            validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+            icon: 'fa-key',
+            addNew: true
           }
-          respons += '<label data-error="wrong" data-success="right" for="add-' + key + '">' + tableConfig[key].label + '</label>';
-          respons += '<input type="' + key + '" id="add-' + key + '" class="form-control validate">';
-          respons += '</div>';
-        }
-      }
-      $('#AddFormContent').innerHTML(respons);
-    }
+        };
+        */
+        // let passwordPopup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+        // $(passwordPopup).appendTo($('.content-wrapper')[0]);
 
-  </script>
+      }
+
+      let changeId = 0;
+
+      function changepasswordShow(id) {
+        const changepasswordConfig = {
+          password: {
+            label: 'Password',
+            validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+            icon: 'fa-key',
+            addNew: true
+          }
+        };
+        const okButtonConfig = {function: 'changePassword.call(this,' + id + ')', label: 'ChangePassword'};
+        const popup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+        document.getElementsByClassName('content-wrapper')[0].appendChild(popup);
+      }
+
+      function changePassword(id) {
+        const passwordInput = this.parentNode.parentNode.querySelectorAll('#ChangePassword-password')[0];
+        const divModalContent = this.parentNode.parentNode.parentNode.parentNode;
+        let passwd = passwordInput.value;
+        function sucessFunc() {
+          divModalContent.remove();
+        }
+        function runAfterFunc() {
+          passwordInput.value = '';
+        }
+        patchData(id, { valueToChange: 'password', newValue: passwd }, sucessFunc, runAfterFunc);
+      }
+
+</script>
