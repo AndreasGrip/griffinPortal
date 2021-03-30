@@ -11,7 +11,7 @@ router.get('/bower_components/', (req, res, next) => {
 });
 
 router.get('/logout/', (req, res, next) => {
-  console.log('logout');
+  console.log('logout ');
   req.session.destroy();
   res.redirect('../');
 });
@@ -20,13 +20,11 @@ router.get('/login/', (req, res, next) => {
   if (req.session && req.session.user !== undefined && req.session.user.id !== undefined) {
     return res.redirect('../');
   } else {
-    console.log('login' + req.session.user);
     res.render('login', {});
   }
 });
 
 router.post('/login/', (req, res, next) => {
-  console.log('logpost');
   const query = 'select id, userName, salt, password, firstName, lastName, email from ' + mysqlConf.database + '.users where (email = ' + db.escape(req.body.email) + ' or userName = ' + db.escape(req.body.email) + ') and deactivated is null';
 
   db.query(query)
@@ -36,11 +34,11 @@ router.post('/login/', (req, res, next) => {
       } else if (data[0].length > 1) {
         throw new Error('More than one match found for user ' + req.body.email);
       } else if (bcrypt.compareSync(req.body.password, data[0][0].password)) {
-        req.session.user = {};
         req.session.user = data[0][0];
         if (!req.session.user.id) {
           throw new Error('Failed to init user (userid missing), contact administrator. User: ' + req.body.email);
         }
+        console.log('User ' + req.body.email + ' logged in.');
       } else {
         throw new Error('Wrong password ' + req.body.email);
       }
@@ -74,8 +72,8 @@ router.post('/login/', (req, res, next) => {
     })
     .catch((err) => {
       res.render('login', { error: err });
-      //res.status(503);
-      //res.render('error', { error: err });
+      // res.status(503);
+      // res.render('error', { error: err });
     });
 });
 
@@ -84,49 +82,40 @@ router.post('/login/', (req, res, next) => {
 // eslint-disable-next-line max-statements
 router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*javascripts).*$/u, (req, res, next) => {
   // console.log('root get ', req.url);
-  if (req.session) {
-    if (req.session.user === undefined || !req.session.user.id) {
-      return res.redirect('/login/');
-    }
-    const url = {};
-
-    url.org = req.path;
-    url.path = '';
-    url.type = '';
-    let result = {};
-
-    switch (true) {
-      case !!/(^\/\w+\/)(\w*)/u.exec(req.path):
-        result = req.path.match(/(^\/\w*\/)(\w*)/u);
-        url.path = result[1];
-        url.type = result[2];
-        break;
-      case !!/(^\/)(\w*)/u.exec(req.path):
-        result = req.path.match(/(^\/)(\w*)/u);
-        url.path = result[1];
-        url.type = result[2];
-        break;
-      default:
-        break;
-    }
-    if (req.session.access[url.path]) {
-      if (req.session.access[url.path] === 'ALL') {
-        next();
+  if (req?.session?.user?.id !== undefined) {
+    const newUrl = new URL(req.protocol + '://' + req.hostname + req.url);
+    // what access rules match this url?
+    const accessMatch = Object.keys(req.session.access).filter((key) => new RegExp('^' + key).exec(newUrl.pathname));
+    // if no access rules match this url, redirect to /login/
+    if (accessMatch.length > 0) {
+      // Sort the matches and put the longest match on the top.
+      accessMatch.sort((a, b) => b.length - a.length);
+      // use the match on top as "bestMatch"
+      let bestMatch = accessMatch.shift();
+      // extract the types from the "bestMatch", and create an array by splitting by ',' after removing any spaces.
+      const bestMatchType = req.session.access[bestMatch] ? req.session.access[bestMatch].replace(' ').split(',') : [];
+      // add a trailing slash if there is none. (there should be)
+      if (bestMatch.slice(-1) !== '/') bestMatch += '/';
+      // rename the part that is the match from the url, the rest should be the type
+      const type = newUrl.pathname.replace(new RegExp('^' + bestMatch), '');
+      // the type should be the part after the last slash, if there is still a slash then it's a bad match
+      if (type.search('/') >= 0) {
+        console.debug('Partial access match, but not for entire pathname. pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
+      } else if (bestMatchType.find((accType) => accType.toLowerCase() === 'all')) {
+        console.debug('Type all found on pathname: ' + newUrl.pathname);
+        return next();
+      } else if (bestMatchType.find((accType) => accType.toLowerCase() === type.toLowerCase())) {
+        console.debug('Type exact match found on pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
+        return next();
       } else {
-        for (const type of req.session.access[url.path].split(',')) {
-          if (type === url.type) {
-            next();
-          }
-        }
-
-        return res.redirect('/login/');
+        console.debug('No match found on pathname: ' + newUrl.pathname);
       }
-    } else {
-      return res.redirect('/login/');
     }
   } else {
-    next();
+    // Session seem broken, so destroy it.
+    req.session.destroy();
   }
+  return res.redirect('/login/');
 });
 
 module.exports = router;
