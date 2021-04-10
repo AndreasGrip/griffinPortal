@@ -97,22 +97,23 @@ app.use('/userAccess/', userAccessRouter);
 // Add any modules
 const modulesPath = path.join(__dirname, 'modules');
 const fs = require('fs');
-fs.readdirSync(modulesPath, { withFileTypes: true })
-  .filter((dirent) => dirent.isDirectory())
-  .forEach((folder) => {
-    console.log('folder found in modules folder, load module ' + folder.name);
-    const fullfolder = path.join(modulesPath, folder.name);
-    const routexist = fs.existsSync(path.join(fullfolder, 'route.js'));
-    const viewexist = fs.existsSync(path.join(fullfolder, 'view.pug'));
-    if (routexist && viewexist) {
-      app.use('/' + folder.name + '/', require(path.join(modulesPath, folder.name, 'route.js')));
-    } else {
-      console.error('Failed to load module ' + folder.name);
-      if (routexist) console.log(folder.name + ' is missing route.js file;');
-      if (viewexist) console.log(folder.name + ' is missing view.pug file;');
-    }
-  });
-
+if (fs.existsSync(modulesPath)) {
+  fs.readdirSync(modulesPath, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .forEach((folder) => {
+      console.log('folder found in modules folder, load module ' + folder.name);
+      const fullfolder = path.join(modulesPath, folder.name);
+      const routexist = fs.existsSync(path.join(fullfolder, 'route.js'));
+      const viewexist = fs.existsSync(path.join(fullfolder, 'view.pug'));
+      if (routexist && viewexist) {
+        app.use('/' + folder.name + '/', require(path.join(modulesPath, folder.name, 'route.js')));
+      } else {
+        console.error('Failed to load module ' + folder.name);
+        if (routexist) console.log(folder.name + ' is missing route.js file;');
+        if (viewexist) console.log(folder.name + ' is missing view.pug file;');
+      }
+    });
+}
 app.use(express.static(path.join(__dirname, 'public')));
 // AGR start
 // app.use(express.static(path.join(__dirname, 'public', 'AdminLTE')));
