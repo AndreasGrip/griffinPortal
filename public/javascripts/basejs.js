@@ -378,11 +378,13 @@ function uiMSelCreate(selected, allObjects, api) {
   const select = oneLineTag('select', { size: 1 });
   select.setAttribute('onchange', "uiMSelCreateAdd(this,'" + api + "');");
   select.appendChild(new Option('Select something to add', ''));
-  allObjects.forEach((obj) => {
-    let option;
-    if (!selected.find((sel) => sel === obj.name)) option = new Option(obj.name, obj.value);
-    if (option) select.appendChild(option);
-  });
+  if (allObjects) {
+    allObjects.forEach((obj) => {
+      let option;
+      if (!selected.find((sel) => sel === obj.name)) option = new Option(obj.name, obj.value);
+      if (option) select.appendChild(option);
+    });
+  }
   response.appendChild(select);
   return response;
 }
