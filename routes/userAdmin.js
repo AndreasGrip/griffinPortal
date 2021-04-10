@@ -22,7 +22,8 @@ function sqlQuery(sql, res) {
 }
 
 router.get('/', (req, res, next) => {
-  res.render('base', { pageToRender: 'userAdmin', label: 'userAdmin', path: 'userAdmin/' });
+  // res.render('base', { pageToRender: 'userAdmin', label: 'userAdmin', path: 'userAdmin/' });
+  res.render('userAdmin', { label: 'userAdmin', view: 'table' });
 });
 
 router.get('/list', (req, res, next) => {

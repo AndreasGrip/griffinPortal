@@ -1,0 +1,69 @@
+doctype html
+head
+  meta(charset='utf-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  title AdminLTE WebAdmin | Log in
+  // Tell the browser to be responsive to screen width
+  meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport')
+  // Bootstrap 3.3.7
+  link(rel='stylesheet' href='../bower_components/bootstrap/dist/css/bootstrap.min.css')
+  // Font Awesome
+  link(rel='stylesheet' href='../bower_components/font-awesome/css/font-awesome.min.css')
+  // Ionicons
+  link(rel='stylesheet' href='../bower_components/Ionicons/css/ionicons.min.css')
+  // Theme style
+  link(rel='stylesheet' href='../dist/css/AdminLTE.min.css')
+  // iCheck
+  link(rel='stylesheet' href='../plugins/iCheck/square/blue.css')
+  style.
+    .errorbox {
+    background-color: red;
+    if error
+        padding: 10px;
+    color: white;
+    }
+body.hold-transition.login-page
+  .login-box
+    .login-logo
+      b A
+      | dminLTE
+    // /.login-logo
+    .login-box-body
+      p.login-box-msg Sign in to start your session
+      form(action='../login/' method='post')
+        .form-group.has-feedback
+          input#UserName.form-control(name='email' placeholder='UserName or Email')
+          span.glyphicon.glyphicon-envelope.form-control-feedback
+        .form-group.has-feedback
+          input#password.form-control(name='password' type='password' placeholder='Password')
+          span.glyphicon.glyphicon-lock.form-control-feedback
+        .row
+          .col-xs-8
+            //
+              <div class="checkbox icheck">
+              <label> <input type="checkbox" /> Remember Me </label>
+              </div>
+          // /.col
+          .col-xs-4
+            button.btn.btn-primary.btn-block.btn-flat(type='submit') Sign In
+          // /.col
+      // /.social-auth-links
+      // <a href="#">I forgot my password</a><br>
+    // /.login-box-body
+    if error
+      .errorbox=error
+  // /.login-box
+  // jQuery 3
+  script(src='../bower_components/jquery/dist/jquery.min.js')
+  // Bootstrap 3.3.7
+  script(src='../bower_components/bootstrap/dist/js/bootstrap.min.js')
+  // iCheck
+  script(src='../plugins/iCheck/icheck.min.js')
+  script.
+    $(function () {
+    $('input').iCheck({
+    checkboxClass: 'icheckbox_square-blue',
+    radioClass: 'iradio_square-blue',
+    increaseArea: '20%' /* optional */
+    });
+    });

@@ -19,7 +19,8 @@ function sqlQuery(sql, res) {
 }
 
 router.get('/', (req, res, next) => {
-  res.render('base', { pageToRender: 'userAccess', label: 'userAccess', path: 'userAccess/'});
+  // res.render('base', { pageToRender: 'userAccess', label: 'userAccess', path: 'userAccess/'});
+  res.render('userAccess', { label: 'userAccess', view: 'table' });
 });
 
 router.get('/list', (req, res, next) => {

@@ -1,0 +1,104 @@
+extends template.pug 
+
+block content 
+  script(type='text/javascript').
+    let tableConfig = {
+    id: {
+    label: 'Id'
+    },
+    userName: {
+    label: 'UserName',
+    editable: true,
+    validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+    icon: 'fa-user-circle',
+    addNew: true
+    },
+    firstName: {
+    label: 'FirstName',
+    editable: true,
+    validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+    icon: 'fa-user-circle',
+    addNew: true
+    },
+    lastName: {
+    label: 'LastName',
+    editable: true,
+    validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+    icon: 'fa-user-circle',
+    addNew: true
+    },
+    email: {
+    label: 'Email',
+    editable: true,
+    validation: '/[^@]+@[^\.]+\..+/',
+    icon: 'fa-envelope',
+    addNew: true
+    },
+    access: {
+    label: 'Access',
+    icon: 'fa-handshake-o',
+    content: 'multiselect({access},allAccess)',
+    api: 'useraccess'
+    },
+    startPage: {
+    label: 'StartPage',
+    editable: true,
+    icon: 'fa-home',
+    addNew: true
+    },
+    password: {
+    label: 'Password',
+    validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+    icon: 'fa-key',
+    addNew: true,
+    content: 'button(ChangePassword,danger)',
+    function: 'changepasswordShow({id})'
+    },
+    delete: {
+    label: 'Delete',
+    function: 'del({id})',
+    content: 'button(Del,danger)'
+    }
+    };
+    
+    document.addEventListener('DOMContentLoaded', function () {
+    const onSuccess = storeDatafunction('allAccess');
+    getData('useraccess', onSuccess , initPage);
+    }, false);
+    
+    
+    
+    function initPage() {
+    listUpdate();
+    
+    let okButtonConfig = {};
+    }
+    
+    let changeId = 0;
+    
+    function changepasswordShow(id) {
+    const changepasswordConfig = {
+    password: {
+    label: 'Password',
+    validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
+    icon: 'fa-key',
+    addNew: true
+    }
+    };
+    const okButtonConfig = {function: 'changePassword.call(this,' + id + ')', label: 'ChangePassword'};
+    const popup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
+    document.getElementsByClassName('content-wrapper')[0].appendChild(popup);
+    }
+    
+    function changePassword(id) {
+    const passwordInput = this.parentNode.parentNode.querySelectorAll('#ChangePassword-password')[0];
+    const divModalContent = this.parentNode.parentNode.parentNode.parentNode;
+    let passwd = passwordInput.value;
+    function sucessFunc() {
+    divModalContent.remove();
+    }
+    function runAfterFunc() {
+    passwordInput.value = '';
+    }
+    patchData(id, { valueToChange: 'password', newValue: passwd }, sucessFunc, runAfterFunc);
+    }

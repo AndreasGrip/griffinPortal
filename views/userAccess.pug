@@ -1,0 +1,61 @@
+extends template.pug 
+
+block content 
+  script(type='text/javascript').
+    let tableConfig = {
+    id: {
+    label: 'Id'
+    },
+    name: {
+    editable: true,
+    validation: '/^[a-zA-Z0-9\\-\ åäöÅÄÖ\_]{3,44}$/',
+    icon: 'fa-user-circle',
+    addNew: true
+    },
+    description: {
+    editable: true,
+    validation: '/^[\\/a-zA-Z0-9\_]{3,100}$/',
+    icon: 'fa-info-circle',
+    addNew: true
+    },
+    URL: {
+    validation: '/^[\\/a-zA-Z0-9\_]{1,100}$/',
+    editable: true,
+    icon: 'fa-sitemap',
+    addNew: true
+    },
+    type: {
+    label: 'Subpages',
+    validation: '/^[\\/_a-zA-Z0-9]{1,100}$/',
+    editable: true,
+    icon: 'fa-magic',
+    addNew: true
+    },
+    icon: {
+    label: 'Icon',
+    validation: '/^[\\-\_a-zA-Z0-9]{1,100}$/',
+    editable: true,
+    icon: 'fa-info',
+    addNew: true,
+    },
+    sortorder: {
+    lable: 'SortOrder',
+    editable: true,
+    validation: '/^\\\d+$/',
+    icon: 'fa-sort-alpha-asc',
+    addNew: true
+    },
+    delete: {
+    function: 'del({id})',
+    content: 'button(Del,danger)'
+    }
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+    initPage();
+    }, false);
+    function initPage() {
+    listUpdate();
+    let okButtonConfig = {};
+    okButtonConfig.label = 'Add';
+    okButtonConfig.function = 'addSave(\'' + okButtonConfig.label + '\')';
+    }
