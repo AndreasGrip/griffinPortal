@@ -99,10 +99,10 @@ router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*java
       // rename the part that is the match from the url, the rest should be the type
       const type = newUrl.pathname.replace(new RegExp('^' + bestMatch), '');
       // the type should be the part after the last slash, if there is still a slash then it's a bad match
-      if (type.search('/') >= 0) {
-        console.debug('Partial access match, but not for entire pathname. pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
+      if (type.search('/') >= 0 && bestMatch === '/') {
+        console.debug('Best match is root, bug type contains /, access to "home" dont give access to all. pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
       } else if (bestMatchType.find((accType) => accType.toLowerCase() === 'all')) {
-        console.debug('Type all found on pathname: ' + newUrl.pathname);
+        console.debug('Type all found on pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
         return next();
       } else if (bestMatchType.find((accType) => accType.toLowerCase() === type.toLowerCase())) {
         console.debug('Type exact match found on pathname: ' + newUrl.pathname + ', bestMatch: ' + bestMatch + ', type: ' + type);
