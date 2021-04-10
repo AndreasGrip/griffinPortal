@@ -10,7 +10,7 @@ winstonLoader.config('./config/winston.json');
 const log = winstonLoader.getLogger('app');
 log.stream = {
   write: function (message, encoding) {
-    log.info(message);
+    log.info(message.trim());
   },
 };
 
@@ -31,7 +31,6 @@ const FileStore = require('session-file-store')(session); // store session in fi
 
 // const MemoryStore = require('memorystore')(session); // To avoid memory leaks
 
-const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 
 const indexRouter = require('./routes/index');
@@ -74,11 +73,11 @@ if (typeof MemoryStore !== 'undefined') {
 app.use(session(sessionObj));
 
 app.use(
-  bodyParser.urlencoded({
+  express.urlencoded({
     extended: false,
   })
 );
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use('/', authRouter);
 
