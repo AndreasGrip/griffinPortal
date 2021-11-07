@@ -10,7 +10,7 @@ router.use('/lastname', (req,res,next) => {
 });
 
 router.get('/', (req, res, next) => {
-    res.render(path.join(__dirname, 'view'));
+    res.render(path.join(__dirname, 'index'));
   });
 
 module.exports = router;

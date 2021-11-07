@@ -15,7 +15,7 @@ router.use('/secret', (req, res, next) => {
   res.end('Nothing to se here, please go away!');
 });
 router.get('/', (req, res, next) => {
-  res.render(path.join(__dirname, 'view'));
+  res.render(path.join(__dirname, 'index'));
 });
 // etc.
 
