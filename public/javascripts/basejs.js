@@ -166,8 +166,7 @@ function patchData(url, patchData, success, runAfter) {
 
 function createFaIcon(iconClass) {
   const node = document.createElement('i');
-  node.classList.add('fa');
-  node.classList.add(iconClass);
+  node.classList.add('fa', iconClass);
   return node;
 }
 
@@ -400,7 +399,7 @@ function uiMSelCreateAdd(select, api) {
   const ul = select.parentNode.getElementsByTagName('ul')[0];
   // get the values of all selected objects
   const choices = ul.getElementsByTagName('input');
-  // Make sure we dont include something already included.
+  // Make sure we don't include something already included.
   for (const choice of choices) {
     if (choice.value === option.value) return;
   }
@@ -477,7 +476,7 @@ function uiFUCreate(label, dest, format, id) {
   return form;
 }
 
-// This is to view data when there is only one row of data but alot of columns.
+// This is to view data when there is only one row of data but a lot of columns.
 function createDataRowView(data, config) {
   const respond = oneLineTag('table', { id: 'customer' });
   respond.classList.add('table', 'table-bordered');
@@ -539,7 +538,7 @@ function createTable(data, config) {
   configKeys.forEach((key) => {
     // If no label is defined, use the column name as label
     if (config[key].label === undefined) config[key].label = key;
-    // If column was not set by the data recived, add one now and mark the config as extra.
+    // If column was not set by the data received, add one now and mark the config as extra.
     if (config[key].column === undefined) {
       config[key].column = ++columns;
       config[key].extra = true;
@@ -696,7 +695,7 @@ function createTable(data, config) {
 }
 
 function listUpdate() {
-  // Now add configured columns that don't exist in the resultset.
+  // Now add configured columns that don't exist in the result set.
   for (const key of Object.keys(tableConfig)) {
     tableConfig[key].label = tableConfig[key].label === undefined ? key : tableConfig[key].label;
   }
@@ -746,7 +745,7 @@ function del(id) {
 
 function addSave(label) {
   const addData = {};
-  // Chech all regexp validations and abort of any of them fail.
+  // Check all regexp validations and abort of any of them fail.
   for (const key of Object.keys(tableConfig)) {
     const conf = tableConfig[key];
     if (conf.addNew && conf.validation) {
@@ -766,14 +765,14 @@ function addSave(label) {
   postData('', addData, listUpdate, doNothing);
 }
 
-// let tableobject = table2jsonObj(document.getElementbyId('mytable')); // [{header1: a1, header2: b1},{header1: a2, header2: b2}]
+// let tableobject = table2jsonObj(document.getElementById('mytable')); // [{header1: a1, header2: b1},{header1: a2, header2: b2}]
 
 function table2jsonObj(table) {
   if (!table || !table.rows) {
     return Error('table2json expected table got something else ' + JSON.stringify(table));
   }
   if (table.rows === 0) {
-    return Error('table2json recived empty table (not even headers)');
+    return Error('table2json received empty table (not even headers)');
   }
 
   let headers = []; //Always the first row

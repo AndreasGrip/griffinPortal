@@ -17,6 +17,10 @@ function sqlQuery(sql, res) {
     })
     .catch((err) => {
       const errorMsg = err.message ? err.message : JSON.stringify(err);
+      console.log("err.code: " + err.code);
+      console.log("err.message: " + err.message);
+      console.log("err.sqlState: " + err.sqlState);
+      console.log("err.stack: " + err.stack);
       res.status(400).end(errorMsg);
     });
 }
@@ -60,7 +64,7 @@ router.patch('/:id(\\d+)', (req, res, next) => {
   // if it's the password, a special set of rules and convert from plaintext to hashed format.
   if (req.body.valueToChange.toLowerCase() === 'password') {
     if (req.body.newValue.length < 6) {
-      res.status(411).end("To short password");
+      res.status(411).end("To short password, min 6char");
       return false;
     }
     req.body.newValue = bcrypt.hashSync(req.body.newValue, 10);
@@ -129,10 +133,10 @@ router.patch('/useraccess/:userid(\\d+)', (req, res, next) => {
   let sql;
   if (req.body.newValue === true) {
     sql = 'insert into ' + mysqlConf.database + '.user_useraccess (userid, useraccessid) \
-    select ' + db.escape(req.params.userid) + ',id from ' + mysqlConf.database + '.useraccess where name = ' + db.escape(req.body.valueToChange);
+    select ' + db.escape(req.params.userid) + ',id from ' + mysqlConf.database + '.useraccess where id = ' + db.escape(req.body.valueToChange);
   } else {
     sql = 'delete uua from user_useraccess uua join useraccess ua on uua.useraccessid = ua.id \
-    where uua.userid = ' + db.escape(req.params.userid) + ' and ua.name = ' + db.escape(req.body.valueToChange);
+    where uua.userid = ' + db.escape(req.params.userid) + ' and ua.id = ' + db.escape(req.body.valueToChange);
   }
   sqlQuery(sql, res);
 });
