@@ -105,13 +105,12 @@ if (fs.existsSync(modulesPath)) {
       console.log('folder found in modules folder, load module ' + folder.name);
       const fullfolder = path.join(modulesPath, folder.name);
       const routexist = fs.existsSync(path.join(fullfolder, 'route.js'));
-      const viewexist = fs.existsSync(path.join(fullfolder, 'view.pug'));
-      if (routexist && viewexist) {
-        app.use('/' + folder.name + '/', require(path.join(modulesPath, folder.name, 'route.js')));
+      if (routexist) {
+        const routePath = path.join(modulesPath, folder.name, 'route.js');
+        const route = require(routePath)
+        app.use('/' + folder.name + '/', route);
       } else {
-        console.error('Failed to load module ' + folder.name);
-        if (routexist) console.log(folder.name + ' is missing route.js file;');
-        if (viewexist) console.log(folder.name + ' is missing view.pug file;');
+        console.error('Failed to load module ' + folder.name + ' it is missing route.js file;');
       }
     });
 }

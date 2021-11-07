@@ -1,0 +1,389 @@
+.gModal {
+  display: block;
+  /* overflow: hidden; */
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.spinningWheel {
+  /* border: 16px solid #f3f3f3; */
+  /* Light grey */
+  border-top: 16px solid #3498db;
+  /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+body {
+  background-color: #ecf0f5;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+horizontalbar {
+  position: relative;
+  width: 100%;
+  max-height: 50px;
+  z-index: 1030;
+}
+.logo {
+  background-color: #367fa9;
+  color: #fff;
+  text-align: center;
+  float: left;
+  font-size: 1.2em;
+  display: block;
+  line-height: 50px;
+  width: 200px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-decoration: none;
+}
+.right {
+  margin-left: auto;
+  margin-right: 0;
+}
+.header {
+  background-color: #3c8dbc;
+  color: #fff;
+}
+.footer {
+  border-top: 1px solid #d2d6de;
+  margin-left: 200px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: white;
+  float: left;
+  padding-right: 200px;
+}
+.bgmain2 {
+  background-color: rgb(33, 37, 41);
+  color: #fff;
+}
+.bgmain3 {
+  background-color: rgb(255, 255, 255);
+  color: #000;
+}
+.settingsNav {
+  float: right;
+  padding: 10px 15px;
+}
+verticalbar {
+  padding-top: 50px;
+  position: absolute;
+  width: 200px;
+  height: 100vh;
+}
+verticalbar .nav-link {
+  color: #fff;
+}
+/* glyphicon */
+verticalbar i:empty {
+  margin: 5px;
+}
+.menu-Title {
+  align-content: center;
+  text-align: center;
+}
+.hbmenuright {
+  display: block;
+}
+content {
+  box-sizing: border-box;
+  margin-left: 210px;
+  margin-right: 10px;
+  margin-top: 5px;
+  width: 100%;
+}
+.profileMenu {
+  position: fixed;
+  right: 10px;
+  top: 5px;
+}
+#list {
+  width: 100%;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+#list thead {
+  background-color: rgb(37, 78, 155);
+  color: #fff;
+  text-size-adjust: +2;
+}
+#list thead tr th {
+  border: 1px solid black;
+  padding-left: 10px;
+}
+
+#list tbody tr td {
+  padding-left: 10px;
+}
+
+#list tbody tr:nth-child(odd) {
+  background-color: #b9b8ec;
+}
+#list tbody tr:nth-child(even) {
+  background-color: #cecdf0;
+}
+
+/* table.js start */
+
+#tableContainer .sort:hover {
+  text-decoration: none;
+  background-color: #1b8aba;
+}
+#tableContainer .sort:focus {
+  outline: none;
+}
+#tableContainer .sort:after {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  content: '';
+  position: relative;
+  top: -10px;
+  right: -5px;
+}
+#tableContainer .sort.asc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #fff;
+  content: '';
+  position: relative;
+  top: 4px;
+  right: -5px;
+}
+#tableContainer .sort.desc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #fff;
+  content: '';
+  position: relative;
+  top: -4px;
+  right: -5px;
+}
+
+#tableContainer .search {
+  align-items: center;
+}
+
+#tableContainer .editing {
+  background-color: white;
+  color: black;
+}
+
+#tableContainer .saveProgress {
+  background-color: yellow;
+  color: black;
+}
+
+#tableContainer .saveSuccess {
+  background-color: rgb(4, 175, 4);
+  color: black;
+}
+
+#tableContainer .saveFail {
+  background-color: red;
+  color: black;
+}
+
+#tableContainer .saveDone {
+  transition: background-color 1s linear;
+  background-color: transparent;
+  color: black;
+}
+
+#tableContainer .tblAdd {
+  border: 2px solid #aaa;
+  width: 40px;
+  height: 40px;
+  margin: 2px;
+  margin-top: 10px;
+  left: 50%;
+  margin-right: -50%
+}
+
+.fullWidth {
+  width: 100%;
+}
+/* table.js end */
+
+/* uiMSelCreate */
+.select::after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #000;
+  content: '';
+  position: relative;
+  top: -4px;
+  right: -5px;
+  display: inline-block;
+}
+.select {
+  background-color: rgb(143, 187, 143);
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  padding-right: 20px;
+  border-width: 1px;
+  border-style: solid;
+  display: inline-block;
+}
+.notSelected {
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.notSelected:hover {
+  border: solid 1px;
+  background-color: #288;
+}
+.notSelectedContainer {
+  background-color: rgb(143, 187, 143);
+  display: block;
+  border-width: 1px;
+  border-style: solid;
+  position: absolute;
+  z-index: 1;
+}
+/* uiMSelCreate */
+
+/* You should change everything in circle that is defined in px the rest is auto */
+.circle{
+  border: 5px solid #aaa;
+  width: 100px;
+  height: 100px;
+  margin: 4px;
+  border-radius: 100%;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  background: #aaaaaa4f;
+}
+.circle:hover{
+  background: #6363634f;
+}
+.circle:active{
+  background: radial-gradient(#aaa, #fff);
+}
+.circle:before,
+.circle:after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+}
+/* PLUS */
+.circle.plus:before,
+.circle.plus:after {
+  background:green;
+}
+.circle.plus:before{
+  width: 10%;
+  margin: 15% auto;
+}
+.circle.plus:after{
+  margin: auto 15%;
+  height: 10%;
+}
+/* MINUS */
+.circle.minus:before{
+  background: #cc0000;
+  margin: auto 15%;
+  height: 10%;
+}
+/* CROSS */
+.circle.cross:after,
+.circle.cross:before{
+  background: #000;
+  margin: auto 20%;
+  height: 10%;
+  transform:rotateZ(45deg);
+}
+.circle.cross:after{
+  transform:rotateZ(-45deg);
+}
+
+.window{
+  position: absolute;
+  background-color: #367fa9;
+  padding: 3px;
+  top: 50%; /* center on page */
+  left: 50%; /* center on page */
+  transform: translate(-50%, -50%); /* center on page */
+}
+.window .content,
+.window .buttonArea {
+  background-color: #fff;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+}
+.window .header {
+  text-align: center;
+}
+
+.window .content {
+  padding-top: 10px;
+}
+.windowForm {
+  text-align: right;
+}
+.windowForm label {
+  padding: 0px 5px 0px 5px;
+}
+.windowForm input {
+
+}
+
+
+.hidden {
+  display: none;
+}
+
+.menu-dropdown {
+  z-index: 1000;
+  background-color: #fff;
+  color: #000;
+  border: solid 1px rgba(0, 0, 0, 0.15);
+  margin-top: 6px;
+}
+.menu-dropdowna {
+  width: 100%;
+  padding: 0.25rem 1rem;
+  background-color: #fff;
+  color: #000;
+  text-decoration: none;
+}
