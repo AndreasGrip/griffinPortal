@@ -3,75 +3,73 @@ extends template.pug
 block content 
   script(type='text/javascript').
     let tableConfig = {
-    id: {
-    label: 'Id'
-    },
-    userName: {
-    label: 'UserName',
-    editable: true,
-    validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-    icon: 'fa-user-circle',
-    addNew: true
-    },
-    firstName: {
-    label: 'FirstName',
-    editable: true,
-    validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-    icon: 'fa-user-circle',
-    addNew: true
-    },
-    lastName: {
-    label: 'LastName',
-    editable: true,
-    validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
-    icon: 'fa-user-circle',
-    addNew: true
-    },
-    email: {
-    label: 'Email',
-    editable: true,
-    validation: '/[^@]+@[^\.]+\..+/',
-    icon: 'fa-envelope',
-    addNew: true
-    },
-    access: {
-    label: 'Access',
-    icon: 'fa-handshake-o',
-    content: 'multiselect({access},allAccess)',
-    api: 'useraccess'
-    },
-    startPage: {
-    label: 'StartPage',
-    editable: true,
-    icon: 'fa-home',
-    addNew: true
-    },
-    password: {
-    label: 'Password',
-    validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
-    icon: 'fa-key',
-    addNew: true,
-    content: 'button(ChangePassword,danger)',
-    function: 'changepasswordShow({id})'
-    },
-    delete: {
-    label: 'Delete',
-    function: 'del({id})',
-    content: 'button(Del,danger)'
-    }
+      id: {
+        label: 'Id'
+      },
+      userName: {
+        label: 'UserName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+        },
+      firstName: {
+        label: 'FirstName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+      },
+      lastName: {
+        label: 'LastName',
+        editable: true,
+        validation: '/^[a-zA-Z0-9\-\ åäöÅÄÖ]{2,44}$/',
+        icon: 'fa-user-circle',
+        addNew: true
+      },
+      email: {
+        label: 'Email',
+        editable: true,
+        validation: '/[^@]+@[^\.]+\..+/',
+        icon: 'fa-envelope',
+        addNew: true
+      },
+      access: {
+        label: 'Access',
+        icon: 'fa-handshake-o',
+        content: 'multiselect({access},allAccess)',
+        api: 'useraccess'
+      },
+      startPage: {
+        label: 'StartPage',
+        editable: true,
+        icon: 'fa-home',
+        addNew: true
+      },
+      password: {
+        label: 'Password',
+        validation: '/^[a-zA-Z0-9\-\ \_åäöÅÄÖ]{3,44}$/',
+        icon: 'fa-key',
+        addNew: true,
+        content: 'button(ChangePassword,danger)',
+        function: 'changePassword({id})'
+      },
+      delete: {
+        label: 'Delete',
+        function: 'del({id})',
+        content: 'button(Del,danger)'
+      }
     };
-    
-    document.addEventListener('DOMContentLoaded', function () {
+    /*
+    window.addEventListener('load', (event) => {
     const onSuccess = storeDatafunction('allAccess');
     getData('useraccess', onSuccess , initPage);
-    }, false);
-    
-    
+    })
     
     function initPage() {
-    listUpdate();
+    // createTable();
     
-    let okButtonConfig = {};
+    // let okButtonConfig = {};
     }
     
     let changeId = 0;
@@ -94,11 +92,60 @@ block content
     const passwordInput = this.parentNode.parentNode.querySelectorAll('#ChangePassword-password')[0];
     const divModalContent = this.parentNode.parentNode.parentNode.parentNode;
     let passwd = passwordInput.value;
-    function sucessFunc() {
+    function successFunc() {
     divModalContent.remove();
     }
     function runAfterFunc() {
     passwordInput.value = '';
     }
-    patchData(id, { valueToChange: 'password', newValue: passwd }, sucessFunc, runAfterFunc);
+    patchData(id, { valueToChange: 'password', newValue: passwd }, successFunc, runAfterFunc);
     }
+    */
+
+    for (const key of Object.keys(tableConfig)) {
+      if (tableConfig[key].label === undefined) tableConfig[key].label = key;
+      tableConfig[key].key = key;
+    }
+
+    // get extra data
+    let accessData;
+    /*
+    let localStorage2 = 'griffinPortal';
+    function storeDatafunction2(storeDataWhere) {
+      if (window[localStorage2] === undefined) window[localStorage2] = {};
+      return function (data) {
+        window[localStorage2][storeDataWhere] = data;
+      };
+    }
+    */
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadfile('/node_modules/list.js/dist/list.min.js');
+
+      initPage();
+    }, false);
+
+    function initPage() {
+      if(filesToLoad > 0) {
+        setTimeout(initPage, 50);
+        return;
+      }
+      const onSuccess = function (data) {
+        // the data from useraccess is somewhat.. Not optimal, so fix it.
+        data.forEach(da => {
+          da.value = da.id;
+          delete(da.id);
+          da.text = da.name;
+          delete(da.name);
+        });
+        // Store global data in global variable to be available until page is reloaded.
+        const store  = storeDatafunction('access')
+        store(data);
+      };
+      const runAfter = function () { 
+        console.log('after useraccess');
+        createTable(tableConfig);
+      };
+      getData('useraccess', onSuccess , runAfter);
+    };
+  #tableContainer

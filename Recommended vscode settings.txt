@@ -1,21 +1,19 @@
 #This is Extension that I use to speed upp coding. It's not for everyone but test using them for a day or two to se if they fit your needs.
 
 General:
+DotENV
 Bracket Pair Colorizer 2
 Prettier - Code formatter
 CSS Formater
+ESLint
 
 Node:
 Node.js Extension Pack
 Path Intellisense
 
-
-EJS:
-https://www.slightedgecoder.com/2018/01/18/formatting-ejs-file-vs-code-visual-studio-code/
-EJS language support
-
 HTML:
 Auto Renamee Tag
+Auto Close Tag
 
 MySQL:
 MySQL Syntax

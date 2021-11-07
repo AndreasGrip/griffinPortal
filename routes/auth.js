@@ -80,7 +80,7 @@ router.post('/login/', (req, res, next) => {
 // Urls that start with login, dist, bower_components or plugins should not be checked for auth.
 // eslint-disable-next-line max-lines-per-function
 // eslint-disable-next-line max-statements
-router.all(/^(?!.*bower_components|.*login|.*dist|.*plugins|.*stylesheets|.*javascripts).*$/u, (req, res, next) => {
+router.all(/^(?!.*bower_components|.*node_modules|.*login|.*dist|.*plugins|.*stylesheets|.*javascripts).*$/u, (req, res, next) => {
   // console.log('root get ', req.url);
   if (req?.session?.user?.id !== undefined) {
     const newUrl = new URL(req.protocol + '://' + req.hostname + req.url);

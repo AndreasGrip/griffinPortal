@@ -13,8 +13,12 @@ fs.readdirSync(__dirname, { withFileTypes: true })
     }
   });
 
-router.use('/secret', (req, res, next) => {
-  res.end('Nothing to se here, please go away!');
+router.use('/firstname', (req, res, next) => {
+  res.end('John');
+});
+
+router.use('/lastname', (req, res, next) => {
+  res.end('Doe');
 });
 
 router.get('/:id(\\d+)?', (req, res, next) => {
@@ -32,6 +36,5 @@ router.get('/:id(\\d+)?', (req, res, next) => {
 
   res.render(path.join(__dirname, pageToRender));
 });
-// etc.
 
 module.exports = router;

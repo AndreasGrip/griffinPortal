@@ -1,69 +1,74 @@
 doctype html
-head
-  meta(charset='utf-8')
-  meta(http-equiv='X-UA-Compatible' content='IE=edge')
-  title AdminLTE WebAdmin | Log in
-  // Tell the browser to be responsive to screen width
-  meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport')
-  // Bootstrap 3.3.7
-  link(rel='stylesheet' href='../bower_components/bootstrap/dist/css/bootstrap.min.css')
-  // Font Awesome
-  link(rel='stylesheet' href='../bower_components/font-awesome/css/font-awesome.min.css')
-  // Ionicons
-  link(rel='stylesheet' href='../bower_components/Ionicons/css/ionicons.min.css')
-  // Theme style
-  link(rel='stylesheet' href='../dist/css/AdminLTE.min.css')
-  // iCheck
-  link(rel='stylesheet' href='../plugins/iCheck/square/blue.css')
-  style.
-    .errorbox {
-    background-color: red;
-    if error
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(http-equiv='X-UA-Compatible' content='IE=edge')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    script.
+      function loadfile(filename) {
+      const filetype = filename.match(/\.js/i) ? 'js' : filename.match(/\.css/i) ? 'css' : 'unknown';
+      if (filetype === 'unknown') return;
+      const head = document.getElementsByTagName('head')[0];
+      const fileref = document.createElement(filetype === 'js' ? 'script' : 'link');
+      if (filetype === 'css') fileref.setAttribute('rel', 'stylesheet');
+      fileref.setAttribute('type', filetype === 'js' ? 'text/javascript' : 'text/css');
+      fileref.setAttribute(filetype === 'js' ? 'src' : 'href', filename);
+      if (filetype === 'js') {
+      window.addEventListener('DOMContentLoaded', () => {
+      head.appendChild(fileref);
+      });
+      } else {
+      head.appendChild(fileref);
+      }
+      }
+
+      loadfile('/node_modules/bootstrap/dist/css/bootstrap.css');
+
+      loadfile('/node_modules/%40popperjs/core/dist/esm/popper.js');
+      loadfile('/node_modules/bootstrap/dist/js/bootstrap.js');
+    style(type='text/css').
+      body {
+      background-color: #d2d6de;
+      }
+      .login-box {
+      width: 360px;
+      margin: 7% auto;
+      }
+      .login-logo {
+      font-size: 35px;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 500;
+      }
+      .login-box-body {
+      background-color: #fff;
+      text-align: center;
+      padding: 20px;
+      }
+      .form-group {
+      margin-bottom: 15px;
+      }
+      .errorbox {
+      background-color: red;
+      if error
         padding: 10px;
-    color: white;
-    }
-body.hold-transition.login-page
-  .login-box
-    .login-logo
-      b A
-      | dminLTE
-    // /.login-logo
-    .login-box-body
-      p.login-box-msg Sign in to start your session
-      form(action='../login/' method='post')
-        .form-group.has-feedback
-          input#UserName.form-control(name='email' placeholder='UserName or Email')
-          span.glyphicon.glyphicon-envelope.form-control-feedback
-        .form-group.has-feedback
-          input#password.form-control(name='password' type='password' placeholder='Password')
-          span.glyphicon.glyphicon-lock.form-control-feedback
-        .row
-          .col-xs-8
-            //
-              <div class="checkbox icheck">
-              <label> <input type="checkbox" /> Remember Me </label>
-              </div>
-          // /.col
-          .col-xs-4
-            button.btn.btn-primary.btn-block.btn-flat(type='submit') Sign In
-          // /.col
-      // /.social-auth-links
-      // <a href="#">I forgot my password</a><br>
-    // /.login-box-body
-    if error
-      .errorbox=error
-  // /.login-box
-  // jQuery 3
-  script(src='../bower_components/jquery/dist/jquery.min.js')
-  // Bootstrap 3.3.7
-  script(src='../bower_components/bootstrap/dist/js/bootstrap.min.js')
-  // iCheck
-  script(src='../plugins/iCheck/icheck.min.js')
-  script.
-    $(function () {
-    $('input').iCheck({
-    checkboxClass: 'icheckbox_square-blue',
-    radioClass: 'iradio_square-blue',
-    increaseArea: '20%' /* optional */
-    });
-    });
+      color: white;
+      }
+
+    title Login
+  body
+    .container-fluid
+      .login-box
+        .login-logo Griffnet
+        form(action='../login/' method='post')
+          .login-box-body.rounded-3
+            .form-group Login
+            div
+              input#UserName.form-control.form-group.rounded-0(name='email' placeholder='userName or Email' autocomplete='off')
+            div
+              input#password.form-control.form-group.rounded-0(type='password' name='password' placeholder='password' autocomplete='off')
+            .d-grid.gap-2.justify-content-md-end
+              button.btn.btn-primary.rounded-0(type='submit') Sign In
+        if error
+          .errorbox=error
+

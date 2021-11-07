@@ -6,136 +6,129 @@ html
     title WebAdmin
     // Tell the browser to be responsive to screen width
     meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport')
-    // Bootstrap 3.3.7
-    link(rel='stylesheet' href='/bower_components/bootstrap/dist/css/bootstrap.min.css')
-    // Font Awesome
-    link(rel='stylesheet' href='/bower_components/font-awesome/css/font-awesome.min.css')
-    // Ionicons
-    link(rel='stylesheet' href='/bower_components/Ionicons/css/ionicons.min.css')
-    // Theme style
-    link(rel='stylesheet' href='/dist/css/AdminLTE.min.css')
-    //
-      AdminLTE Skins. Choose a skin from the css/skins
-      folder instead of downloading all of them to reduce the load.
-    link(rel='stylesheet' href='/dist/css/skins/_all-skins.min.css')
-    // Datatables.net
-    link(rel='stylesheet' href='/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css')
-    //
-      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" />
-      <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    link(rel='stylesheet' href='/stylesheets/style.css')
-    // <script src="../javascripts/base.js"></script>
-  body.hold-transition.skin-blue.sidebar-mini
-      .wrapper
-        header.main-header
-            // Logo
-            a.logo(href='/')
-              // mini logo for sidebar mini 50x50 pixels
-              span.logo-mini
-                  b A
-                  | LTE
-              // logo for regular state and mobile devices
-              span.logo-lg
-                  b AdminLTE
-                  |  WebAdmin
-            // Header Navbar: style can be found in header.less
-            nav.navbar.navbar-static-top
-              // Sidebar toggle button
-              a.sidebar-toggle(href='#' data-toggle='push-menu' role='button')
-                  span.sr-only Toggle navigation
-              .navbar-custom-menu
-                  ul.nav.navbar-nav
-                    // User Account: style can be found in dropdown.less
-                    li.dropdown.user.user-menu
-                        a.dropdown-toggle(href='#' data-toggle='dropdown')
-                          // img src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image"
-                          span.hidden-xs= user.firstName+' '+user.lastName
-                        ul.dropdown-menu
-                          // User image
-                          li.user-header
-                              // img src="dist/img/user2-160x160.jpg" class="img-circle" alt="User Image"
-                              p
-                                = user.firstName+' '+user.lastName
-                                small Member
-                          // Menu Footer
-                          li.user-footer
-                              .pull-left
-                              a.btn.btn-default.btn-flat(href='#') Profile
-                              .pull-right
-                              a.btn.btn-default.btn-flat(href='/logout/') Sign out
-        // Left side column. contains the logo and sidebar
-        aside.main-sidebar
-            // sidebar: style can be found in sidebar.less
-            section.sidebar
-              // sidebar menu: : style can be found in sidebar.less
-              ul.sidebar-menu(data-widget='tree')
-                  li.header MAIN NAVIGATION
-                  li#menuoptions
-            // /.sidebar
-        //
-            Add the sidebar's background. This div must be placed
-            immediately after the control sidebar
-        .control-sidebar-bg
-        script(type='text/javascript').
-            document.addEventListener('DOMContentLoaded', function() {
-            sidebarUpdate();
-            },false);
-            function sidebarUpdate() {
-            waitSpinnerShow();
-            function successFunk(data) {
-            for (let menurow of data) {
-            $('#menuoptions').append('<a href="' + menurow.URL + '"><i class="fa ' + menurow.icon + '"></i> <span>' + menurow.description + '</span></a>');
-            }
-            }
-            getData('/sidebar', successFunk, doNothing);
-            waitSpinnerHide();
-            }
-        .content-wrapper
-          if label
-            // Content Header (Page header)
-            section.content-header
-              h1 
-              ol.breadcrumb
-                li
-                  a(href='../')
-                    i.fa.fa-dashboard
-                    |  Home
-                li.active
-                  i.fa.fa-user-circle
-          #AddFormContainer.text-center
-            button.btn.btn-primary.btn-rounded.mb-4(onclick='addButton()') Add
-          if view === 'table'
-            // Main content 
-            section.content
-              // Main row
-              .row
-                #tableContainer
-          block content
-        footer.main-footer
-            .pull-right.hidden-xs
-            b Version
-            |  1.0
-            strong Created by Andreas Grip
-            |  All rights reserved.
-        // jQuery 3
-        script(src='/bower_components/jquery/dist/jquery.min.js')
-        // jQuery UI 1.11.4
-        script(src='/bower_components/jquery-ui/jquery-ui.min.js')
-        // Bootstrap 3.3.7
-        script(src='/bower_components/bootstrap/dist/js/bootstrap.min.js')
-        // Datatables.net
-        script(src='/bower_components/datatables.net/js/jquery.dataTables.min.js')
-        script(src='/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js')
-        // Resolve conflict in jQuery UI tooltip with Bootstrap tooltip
-        script.
-            if ($.ui) {
-            $.widget.bridge('uibutton', $.ui.button);
-            }
-        // Slimscroll
-        script(src='/bower_components/jquery-slimscroll/jquery.slimscroll.min.js')
-        // FastClick
-        script(src='/bower_components/fastclick/lib/fastclick.js')
-        // AdminLTE App
-        script(src='/dist/js/adminlte.min.js')
-        script(src='/javascripts/basejs.js')
-        // ./wrapper
+    
+    script.
+      let filesToLoad = 0;
+      const filesLoaded = [];
+      const filesLoadedTriggers = []; // [{ files: ['/file.js'], functions : [function () {}] }]
+      const filesFailedToLoad = [];
+
+
+      const runAfterloadfile =  []; // array of functions to run after js/css files are loaded using loadfile
+      // Andreas Grip REALLY hates the behavior to add javascript at the end of HTML ot add it after the page is created.
+      // loadfile is his attempt to remove the need of such behavior, as as a perk use the same function to load css files.
+      function loadfile(filename) {
+        let done = false;
+        const filetype = filename.match(/\.js/i) ? 'js' : filename.match(/\.css/i) ? 'css' : 'unknown';
+        if (filetype === 'unknown') return;
+        filesToLoad++;
+        const head = document.getElementsByTagName('head')[0];
+        const fileref = document.createElement(filetype === 'js' ? 'script' : 'link');
+        fileref.onload = handleLoaded;
+        fileref.onerror = handleFailedToLoad;
+
+        function handleLoaded() {
+          if(!done) {
+            filesLoaded.push(this.attributes.href ? this.attributes.href.nodeValue : this.attributes.src.nodeValue);
+            done = true;
+            filesToLoad--;
+            if(filesToLoad === 0) filesToLoadEmpty();
+          }
+        }
+
+        function handleFailedToLoad() {
+          if(!done) {
+            filesFailedToLoad.push(this.attributes.href ? this.attributes.href.nodeValue : this.attributes.src.nodeValue);
+            done = true;
+            filesToLoad--;
+            if(filesToLoad === 0) filesToLoadEmpty();
+          }
+        }
+
+        function filesToLoadEmpty() {
+          if(runAfterloadfile && Array.isArray(runAfterloadfile) && runAfterloadfile.length > 0) {
+            runAfterloadfile.forEach(element => {
+              element();
+            })
+          }
+        }
+
+        fileref.onreadystatechange = function () {
+          if(fileref.readyState == "loaded" || fileref.readyState === "complete") handleLoaded();
+        }
+        if (filetype === 'css') fileref.setAttribute('rel', 'stylesheet');
+        fileref.setAttribute('type', filetype === 'js' ? 'text/javascript' : 'text/css');
+        fileref.setAttribute(filetype === 'js' ? 'src' : 'href', filename);
+        if (filetype === 'js') {
+          window.addEventListener('DOMContentLoaded', () => {
+            head.appendChild(fileref);
+          });
+        } else {
+          head.appendChild(fileref);
+        }
+        console.log('Loaded ' + filename);
+      }; // end of loadfile
+
+      loadfile('/node_modules/bootstrap/dist/css/bootstrap.css');
+      //loadfile('/node_modules/%40fortawesome/fontawesome-free/css/all.min.css');
+                
+      loadfile('/node_modules/line-awesome/dist/font-awesome-line-awesome/css/all.min.css')
+      
+      // Have this last to overwrite all previous js/css
+      loadfile('/stylesheets/template.css');
+      loadfile('/javascripts/template.js');
+
+
+      function sidebarUpdate() {
+        // if all files are not yet loaded wait another 50ms before trying again.
+        if(filesToLoad > 0) {
+          setTimeout(sidebarUpdate, 50);
+          return;
+        }
+        function successFunk(data) {
+          const menu = document.getElementById('siteMenu')
+          for (let menurow of data) {
+            const menuItem = document.createElement('a');
+            menuItem.href = menurow.URL;
+            menuItem['area-current']="page";
+            menuItem.classList.add('nav-link');
+            const menuIcon = createFaIcon(menurow.icon);
+            const menuText = oneLineTag('span', {innerHTML: menurow.description});
+            menuItem.appendChild(menuIcon);
+            menuItem.appendChild(menuText);
+            menu.appendChild(menuItem);
+          }
+        }
+        getData('/sidebar', successFunk, noOp);
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        sidebarUpdate()
+      })
+
+      window.addEventListener('load', (event) => {
+        document.body.style.display = ''
+      })
+
+    title WebAdmin
+  body(style='display:none')
+    main 
+      horizontalbar.header
+        a.logo(href='/')
+          span.menu-Title WebAdmin
+        nav.navbar.settingsNav 
+          span.nav 
+            .profileMenu 
+              button#settingsBtn.btn.btn-default Settings
+              #settingsMenu.menu-dropdown
+                a.dropdown-item(href="/logout") Logout
+      verticalbar.d-flex.flex-column.text-white.bg-dark 
+        ul#siteMenu.nav.flex-column.mb-auto 
+        .b-example-divider 
+        hr
+        .b-example-divider 
+      horizontalbar.footer.d-flex-bd.bd-highlight 
+        span.p-2.flex-grow-1.bd-highlight Created by Andreas Grip All rights reserved.
+        span.p-2.bd-highlight Version 1.0
+      content
+        block content

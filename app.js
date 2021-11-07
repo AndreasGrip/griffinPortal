@@ -118,8 +118,8 @@ if (fs.existsSync(modulesPath)) {
 app.use(express.static(path.join(__dirname, 'public')));
 // AGR start
 // app.use(express.static(path.join(__dirname, 'public', 'AdminLTE')));
-// app.use(express.static(path.join(__dirname, 'node_modules', 'admin-lte')));
-app.use(express.static(path.join('public', 'bower_components', 'admin-lte')));
+// app.use(express.static(path.join(__dirname, 'public', 'node_modules', 'admin-lte')));
+// app.use(express.static(path.join(__dirname, 'public', 'bower_components', 'admin-lte')));
 // AGR end
 
 // catch 404 and forward to error handler
@@ -135,7 +135,9 @@ app.use((err, req, res, next) => {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', { error: err });
 });
+
+
 
 module.exports = app;
