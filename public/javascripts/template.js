@@ -259,7 +259,10 @@ function createFaIcon(iconClass) {
 // Clean up the config and add rows that are missing but present in data
 function configUpdateFromData(config, data) {
   // this prevent an ugly error message
-  if(data.length === 0) data.push({id:0, 'description': 'Fake row until you created your first!'})
+  if (data.length > 0 && typeof data[0] === 'string') {
+    data.length = 0;
+  }
+  if (data.length === 0) data.push({ id: 0, description: 'Fake row until you created your first!' });
 
   const firstRow = data[0] ? data[0] : [];
   // the keys of all the data that is returned in data.
@@ -851,7 +854,7 @@ function changePassword(id) {
 const settingsBtn = document.getElementById('settingsBtn');
 settingsBtn.addEventListener('click', function () {
   const menu = document.getElementById('settingsMenu');
-  menu.classList.toggle('hidden')
-})
+  menu.classList.toggle('hidden');
+});
 const menu = document.getElementById('settingsMenu');
-menu.classList.toggle('hidden')
+menu.classList.toggle('hidden');
