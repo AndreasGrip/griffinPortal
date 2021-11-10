@@ -3,8 +3,8 @@
   "version": "0.5.0",
   "private": true,
   "scripts": {
-    "install": "npm install && npm --prefix ./public/ install",
-    "upgrade": "npm update && npm --prefix ./public/ update",
+    "instal": "npm install && npm --prefix ./public/ install",
+    "upgrad": "npm update && npm --prefix ./public/ update",
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "path": "^0.12.7",
     "pug": "^3.0.2",
     "session-file-store": "^1.5.0",
-    "uriquerysearch": "^0.9.50",
+    "uriquerysearch": "^0.9.76",
     "validate.io-json": "^1.0.0",
     "winston-sugar": "^1.1.4"
   },

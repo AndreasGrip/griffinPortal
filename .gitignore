@@ -1,5 +1,4 @@
-node_modules
-public/bower_components
+**/node_modules/*
 .env*
 *.log
 **/_old/
