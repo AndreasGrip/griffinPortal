@@ -447,12 +447,26 @@ function createTableBody(table, config, data) {
             if (mSelectSelected.includes(x.value)) x.selected = true;
           });
 
-          console.log(mSelectAll);
-          console.log(mSelectSelected);
+          // console.log(mSelectAll);
+          // console.log(mSelectSelected);
           const msel = uiMSelCreate(td, mSelectOptions, config[key].api);
-          // td.appendChild(msel);
           break;
+        case /^singleselect\(.*\)/.test(config[key].content):
+          const sSelectSelected = row[key];
+          const sSelectAll = window.griffinPortal[key];
+          const sSelectOptions = Array.from(JSON.parse(JSON.stringify(sSelectAll)));
+          // Test is fist row is correct, otherwise treat as no options is available
+          if (!Array.isArray(sSelectOptions) || typeof sSelectOptions[0] === 'string') {
+            sSelectOptions.length = 0;
+            sSelectOptions.push({"text": "No OptionsAvailable", "value": ""});
+          }
 
+          sSelectOptions.forEach((x) => {
+            if (sSelectSelected.includes(x.text)) x.selected = true;
+            if (sSelectSelected.includes(x.value)) x.selected = true;
+          });
+          const ssel = uiSSelCreate(td, sSelectOptions, config[key].api)
+          break;
         //const contentArray = config[key].content.match(/\w+\((.*)\)/)[1].split(',');
         //const valueArray = isJson(config[key].value) ? JSON.parse(config[key].value) : [];
 
@@ -535,6 +549,106 @@ function uiBtnCreate(label, type, functionString, value) {
   button.classList.add('btn', 'btn-' + type, 'btn-rounded', 'fullWidth');
   button.appendChild(document.createTextNode(label));
   return button;
+}
+
+function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
+  const container = document.createElement('div');
+  attachTo.appendChild(container);
+  // Set text to value if not set.
+  selectOptions.forEach((option) => {
+    if (option.text === undefined) option.text = option.value;
+  });
+
+  // Create the select button
+  const select = oneLineTag('span', {}, 'select');
+
+  // attach the selectOptions to select object
+  select.selectOptions = selectOptions;
+
+  // attach the select dropdown.
+  container.appendChild(select);
+  container.addEventListener(
+    'click',
+    function () {
+      console.log('container clicked');
+    },
+    false
+  );
+
+  // The next line works
+  // container.setAttribute('onClick', "console.log('container2 clicked')");
+
+  select.addEventListener('click', function () {
+    console.log('select clicked');
+    toggleMenu();
+  });
+
+  updateSelected();
+
+  // if that is defined, switch the selected variable
+  // else just update the list
+  function updateSelected(that = undefined) {
+    if (that) that.optionData.selected = !that.optionData.selected;
+
+    // Remove the old list of unselected objects.
+    const oldNotSelected = container.getElementsByClassName('notSelectedContainer');
+    if (oldNotSelected.length > 0) {
+      for (let item of oldNotSelected) {
+        item.remove();
+      }
+    }
+
+    // create new arrays of selected/unselected
+    const selected = selectOptions.filter((option) => option.selected);
+    const notSelected = selectOptions.filter((option) => !option.selected);
+    if (selected.length > 0) {
+      select.innerHTML = selected[0].text;
+    } else {
+      if(notSelected.length > 0) {
+        select.innerHTML = 'Nothing selected'
+      } else { 
+        select.innerHTML = 'Nothing to beselected'
+      }
+      
+    }
+  }
+
+  function toggleMenu() {
+    console.log('toggle sSel');
+    // if a menu is already present remove it (as this is toggle)
+    const menu = container.getElementsByClassName('notSelectedContainer');
+    if (menu.length > 0) {
+      for (let item of menu) {
+        item.remove();
+      }
+    } else {
+      const notSelected = selectOptions.filter((option) => !option.selected);
+      const optionList = oneLineTag('span', {}, 'notSelectedContainer');
+      notSelected.forEach((optionData) => {
+        const option = oneLineTag('div', optionData, ['notSelected']);
+        option.optionData = optionData;
+        option.innerHTML = optionData.text;
+        option.addEventListener('click', function () {
+          console.log('click');
+          const id = this.parentNode.parentNode.parentNode.parentNode.rawdata.id;
+          const key = this.parentNode.parentNode.parentNode.conf.key;
+          const value = this.value;
+
+          patchData(
+            APIPatchOnChange + '/' + id,
+            { valueToChange: value, newValue: true },
+            () => updateSelected(option),
+            () => toggleMenu()
+          );
+          // updateSelected(option);
+          //toggleMenu();
+        });
+        optionList.appendChild(option);
+        container.appendChild(optionList);
+      });
+    }
+  }
+  return container;
 }
 
 // options: [{text: 'showed text', value: 'value to save', selected: true},{text: 'showed text2', value: 'value to save2'},{text: 'showed text3', value: 'value to save3', selected: true},{text: 'showed text4', value: 'value to save4'},{text: 'showed text5', value: 'value to save5'},{text: 'showed text6', value: 'value to save6'}]
@@ -668,7 +782,7 @@ function uiMSelCreate(attachTo, selectOptions, APIPatchOnChange) {
 
 // options should be in format, if no text is defined, value will be used instead
 // [{text: 'showed text', value: 'value to save', selected: true},{text: 'showed text2', value: 'value to save2'}]
-function uiSSelCreate(options, APIPatchOnChange) {
+/*function uiSSelCreate(options, APIPatchOnChange) {
   const uiSelect = document.createElement('select');
   options.forEach((option) => {
     if (option.text === undefined) option.text = option.value;
@@ -676,7 +790,7 @@ function uiSSelCreate(options, APIPatchOnChange) {
     uiSelect.appendChild(uiOption);
   });
   return uiSelect;
-}
+}*/
 
 // Ripped from https://github.com/AndreasGrip/enter2tab
 // This will try to emulate the behavior of a tab press by giving the
