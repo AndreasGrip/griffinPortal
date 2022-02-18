@@ -462,8 +462,7 @@ function createTableBody(table, config, data) {
           }
 
           sSelectOptions.forEach((x) => {
-            if (sSelectSelected.includes(x.text)) x.selected = true;
-            if (sSelectSelected.includes(x.value)) x.selected = true;
+            if (sSelectSelected === x.id) x.selected = true;
           });
           const ssel = uiSSelCreate(td, sSelectOptions, config[key].api)
           break;
@@ -556,7 +555,7 @@ function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
   attachTo.appendChild(container);
   // Set text to value if not set.
   selectOptions.forEach((option) => {
-    if (option.text === undefined) option.text = option.value;
+    if (option.name === undefined) option.name = option.id;
   });
 
   // Create the select button
@@ -602,7 +601,7 @@ function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
     const selected = selectOptions.filter((option) => option.selected);
     const notSelected = selectOptions.filter((option) => !option.selected);
     if (selected.length > 0) {
-      select.innerHTML = selected[0].text;
+      select.innerHTML = selected[0].name;
     } else {
       if(notSelected.length > 0) {
         select.innerHTML = 'Nothing selected'
@@ -627,12 +626,12 @@ function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
       notSelected.forEach((optionData) => {
         const option = oneLineTag('div', optionData, ['notSelected']);
         option.optionData = optionData;
-        option.innerHTML = optionData.text;
+        option.innerHTML = optionData.name;
         option.addEventListener('click', function () {
           console.log('click');
           const id = this.parentNode.parentNode.parentNode.parentNode.rawdata.id;
           const key = this.parentNode.parentNode.parentNode.conf.key;
-          const value = this.value;
+          const value = this.id;
 
           patchData(
             APIPatchOnChange + '/' + id,
