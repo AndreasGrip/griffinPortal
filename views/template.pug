@@ -69,7 +69,7 @@ html
         console.log('Loaded ' + filename);
       }; // end of loadfile
 
-      loadfile('/node_modules/bootstrap/dist/css/bootstrap.css');
+      loadfile('/node_modules/bootstrap/dist/css/bootstrap.min.css');
       //loadfile('/node_modules/%40fortawesome/fontawesome-free/css/all.min.css');
                 
       loadfile('/node_modules/line-awesome/dist/font-awesome-line-awesome/css/all.min.css')
@@ -109,6 +109,21 @@ html
       window.addEventListener('load', (event) => {
         document.body.style.display = ''
       })
+
+      function getData2Store(url, storeAs, runAfterAll) {
+        filesToLoad++;
+        const onSuccess = function(data) {
+          const store  = storeDatafunction(storeAs);
+          store(data);
+        }
+        const runafter = function () {
+          filesToLoad--;
+          if(filesToLoad <= 0) {
+            runAfterAll();
+          }
+        }
+        getData(url, onSuccess , runafter);
+      }
 
     title WebAdmin
   body(style='display:none')
