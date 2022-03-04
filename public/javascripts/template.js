@@ -1,4 +1,4 @@
-// Where to store temporary data.
+/** Where to store temporary data. */
 let localStorage = 'griffinPortal';
 
 // Arrays of available colors in bootstrap.
@@ -6,7 +6,10 @@ const bootstrapButtonColors = ['primary', 'secondary', 'success', 'danger', 'war
 const bootstrapAlertColors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 const bootstrapBGColors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white'];
 
-// Test if string is correct json
+/** Test if string is correct json 
+ *  @param {string} str - string that is checked if it is correct json
+ *  @return {boolean}
+ */
 function isJson(str) {
   try {
     JSON.parse(str);
@@ -16,23 +19,32 @@ function isJson(str) {
   return true;
 }
 
-// Function that do nothing, used for callback.
+/** Function that do nothing, used for callback. */
 function noOp() {}
 
 // https://stackoverflow.com/questions/39251318/javascript-function-document-createelementtagname-options-doesnt-work-as-i
-/* function oneLineTag(tag, options) {
-  return Object.assign(document.createElement(tag), options);
-} */
+/**
+ * Create a html element, like div, span etc.
+ * @param {string} tag - Tag, for instance div, span, a etc.
+ * @param {object} options - Optional options like id, href, etc.
+ * @param {object} classList - Optional classes to add to the object.
+ * @return {htmlElement} - html element like div, span etc.
+ */
 function oneLineTag(tag, options = {}, classList = []) {
   if (!Array.isArray(classList)) classList = [classList];
   const obj = Object.assign(document.createElement(tag), options);
   obj.classList.add(...classList);
-  //obj.classList = classList;
   return obj;
 }
 
-// For instance string = 'Hello {Name}, have a god {day} {test}', replaceArray = {Name: 'John', day: 'evening'}
-// should return 'Hello John, have a god evening {test}'
+/**
+ * Replace multiple things in a string
+ * For instance string = 'Hello {Name}, have a god {day} {test}', replaceArray = {Name: 'John', day: 'evening'}
+ * should return 'Hello John, have a god evening {test}'
+ * @param {string} string - Original string
+ * @param {object} replacerObject - {replace: replaceWith} 
+ * @returns {string}
+ */
 function replaceText(string, replacerObject) {
   Object.keys(replacerObject).forEach((key) => {
     string = string.replaceAll('{' + key + '}', replacerObject[key]);
@@ -40,7 +52,11 @@ function replaceText(string, replacerObject) {
   return string;
 }
 
-// store data.
+/**
+ * create a object in localStorage to store data in.
+ * @param {string} storeDataWhere - name where to store data
+ * @returns {object}
+ */
 function storeDatafunction(storeDataWhere) {
   if (window[localStorage] === undefined) window[localStorage] = {};
   return function (data) {
@@ -50,10 +66,13 @@ function storeDatafunction(storeDataWhere) {
 
 //#region spinlocker
 
-// Each thing that loads on the page add 1 to this variable. Is then used to remove spinner when this is 0 and show spinner when above.
+/** Each thing that loads on the page add 1 to this variable. Is then used to remove spinner when this is 0 and show spinner when above. */
 window.spinnerLockers = 0;
 
-// Run this command whenever done with a task to hide spinner when no tasks are left
+/**
+ * Run this command whenever done with a task to hide spinner when no tasks are left
+ * Sibling to waitSpinnerShow()
+ */
 function waitSpinnerHide() {
   window.spinnerLockers--;
   if (window.spinnerLockers <= 0) {
@@ -66,6 +85,10 @@ function waitSpinnerHide() {
 }
 
 // Run this command whenever starting a task to show spinner.
+/**
+ * Run this command whenever start with a task to show the spinner until there is no tasks are left
+ * Sibling to waitSpinnerHide()
+ */
 function waitSpinnerShow() {
   if (window.spinnerLockers === 0) {
     const divMain = document.createElement('div');
@@ -87,6 +110,11 @@ function waitSpinnerShow() {
 
 // https://stackoverflow.com/questions/10623798/how-do-i-read-the-contents-of-a-node-js-stream-into-a-string-variable
 // streamToString(stream).then(function(response){//Do whatever you want with response});
+/**
+ * takes a stream and returns a promise that resolves with the utf8 text once the 
+ * @param {stream} stream 
+ * @returns Promise returning utf8 string
+ */
 function streamToString(stream) {
   const chunks = [];
   return new Promise((resolve, reject) => {
@@ -98,9 +126,12 @@ function streamToString(stream) {
 
 //#region rest command
 
-// url is where get data using http GET method
-// runOnSuccess is function that will be called when finished with returned attached as argument.
-// runAfter is the function to be called after fetch finished, even if error occured.
+/**
+ * REST get data.
+ * @param {string} url - url to fetch
+ * @param {function} runOnSuccess - function that will be called when successfully finished with returned attached as argument. runOnSuccess(data)
+ * @param {function} runAfter - function to be called after fetch finished, even if error occured. runAfter()
+ */
 function getData(url, runOnSuccess, runAfter) {
   waitSpinnerShow();
   const params = {
@@ -130,11 +161,14 @@ function getData(url, runOnSuccess, runAfter) {
     });
 }
 
-// url is where to POST data using http POST method
-// postData is the data to be sent
-// success is the function to be called if post return succes // res.status >= 200 && res.status < 300
-// runAfter is the function to be called after fetch finished, even if error occured.
-function postData(url, postData, success, runAfter) {
+/**
+ * REST post data.
+ * @param {string} url - url to post to
+ * @param {object} postData - data to post, can be object or json string
+ * @param {function} runOnSuccess - function that will be called when successfully finished. runOnSuccess(), no argument
+ * @param {function} runAfter - function to be called after fetch finished, even if error occured. runAfter()
+ */
+function postData(url, postData, runOnSuccess, runAfter) {
   waitSpinnerShow();
   const params = {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -153,12 +187,11 @@ function postData(url, postData, success, runAfter) {
       if (response.ok) {
         return response.json();
       } else {
-        // streamToString(stream).then(function(response){});
         return Promise.reject(new Error('Page ' + response.url + ' returned status ' + response.status + ' ' + response.statusText + ' ' + response.body));
       }
     })
     .then((data) => {
-      success();
+      runOnSuccess();
     })
     .catch((err) => {
       console.log(err.toString());
@@ -170,11 +203,14 @@ function postData(url, postData, success, runAfter) {
     });
 }
 
-// url is where to PATCH data using http PATCH method
-// patchData is the data to be sent
-// success is the function to be called if post return succes // res.status >= 200 && res.status < 300
-// runAfter is the function to be called after fetch finished, even if error occured.
-function patchData(url, patchData, success, runAfter) {
+/**
+ * REST patch data.
+ * @param {string} url - to send patch to
+ * @param {object} patchData - data to patch, can be object or json string
+ * @param {function} runOnSuccess - function that will be called when successfully finished. runOnSuccess(), no argument
+ * @param {function} runAfter - function to be called after fetch finished, even if error occured. runAfter()
+ */
+function patchData(url, patchData, runOnSuccess, runAfter) {
   waitSpinnerShow();
   const params = {
     method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
@@ -197,7 +233,7 @@ function patchData(url, patchData, success, runAfter) {
       }
     })
     .then((data) => {
-      success();
+      runOnSuccess();
     })
     .catch((err) => {
       console.log(err.message);
@@ -210,7 +246,13 @@ function patchData(url, patchData, success, runAfter) {
     });
 }
 
-function delData(url, success, runAfter) {
+/**
+ * REST delete.
+ * @param {string} url - to send delete to
+ * @param {function} runOnSuccess - function that will be called when successfully finished. runOnSuccess(), no argument
+ * @param {function} runAfter - function to be called after fetch finished, even if error occured. runAfter()
+ */
+function delData(url, runOnSuccess, runAfter) {
   const params = {
     method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
     mode: 'cors', // no-cors, *cors, same-origin
@@ -232,8 +274,7 @@ function delData(url, success, runAfter) {
       }
     })
     .then((data) => {
-      success();
-      // createTable();
+      runOnSuccess();
     })
     .catch((err) => {
       console.log(err.toString());
@@ -250,6 +291,11 @@ function delData(url, success, runAfter) {
 //#endregion rest command
 
 // Create and return element suitable to be a icon.
+/**
+ * Create and return element suitable to be a icon.
+ * @param {string} iconClass 
+ * @returns html element
+ */
 function createFaIcon(iconClass) {
   const node = document.createElement('i');
   node.classList.add('fa', iconClass);
@@ -257,6 +303,11 @@ function createFaIcon(iconClass) {
 }
 
 // Clean up the config and add rows that are missing but present in data
+/**
+ * config will be altered to contain settings for all columns in data.
+ * @param {object} config - tableConfig from page
+ * @param {object} data - fetched data that will be used to render page
+ */
 function configUpdateFromData(config, data) {
   // this prevent an ugly error message
   if (data.length > 0 && typeof data[0] === 'string') {
@@ -298,6 +349,11 @@ function configUpdateFromData(config, data) {
 }
 
 //#region table
+/**
+ * generate the the table using config
+ * will fetch 'list' from from the webpages relative path to get data
+ * @param {object} config - tableConfig from page 
+ */
 
 function createTable(config) {
   const tableName = 'list';
@@ -366,6 +422,10 @@ function createTable(config) {
   getData('list', runAfterFunc, noOp);
 }
 
+/**
+ * used by function createTable
+ * @returns http element - used for search of table
+ */
 function createTableSearch() {
   const searchContainer = document.createElement('div');
   const search = oneLineTag('input', { type: 'search', placeholder: 'Search' });
@@ -374,6 +434,11 @@ function createTableSearch() {
   return searchContainer;
 }
 
+/**
+ * used by function createTable
+ * @param {object} config - tableConfig from page
+ * @returns http element thead - first line in the table
+ */
 function createTableHeader(config) {
   const thead = document.createElement('thead');
   const theadtr = document.createElement('tr');
@@ -390,6 +455,13 @@ function createTableHeader(config) {
   return thead;
 }
 
+/**
+ * 
+ * @param {httpElementTable} table - the table that body will be appended to
+ * @param {object} config - tableConfig from page 
+ * @param {object} data - data that will be used to render page
+ * @returns {httpElementBody} - returns the body. Already appended to table
+ */
 function createTableBody(table, config, data) {
   const tbody = document.createElement('tbody');
   tbody.classList.add('list');
@@ -428,8 +500,19 @@ function createTableBody(table, config, data) {
         case /^multiselect\(.*\)/.test(config[key].content):
           // Extract the selected values from string by first convert the text to proper JSON
           // TODO: This should have been JSON in the first place. Test if json, if json don't do the replace thing.
+          if(row[key] === "") row[key] = "[]"
           const mSelectSelected = JSON.parse(row[key].replace(/\[/, '["').replace(/\]/, '"]').replace(/,/g, '","'));
           const mSelectAll = window.griffinPortal[key];
+          mSelectAll.forEach((x) => {
+            if(x.name && !x.text) {
+              x.text = x.name;
+              delete(x.name)
+            }
+            if(x.id && !x.value) {
+              x.value = x.id;
+              delete(x.id)
+            }
+          })
           const mSelectOptions = Array.from(JSON.parse(JSON.stringify(mSelectAll)));
           // TODO: Naming should be fixed to be consistent ffs.
           // options: [{text: 'showed text', value: 'value to save', selected: true}
@@ -444,7 +527,9 @@ function createTableBody(table, config, data) {
 
           mSelectOptions.forEach((x) => {
             if (mSelectSelected.includes(x.text)) x.selected = true;
-            if (mSelectSelected.includes(x.value)) x.selected = true;
+            // if (mSelectSelected.includes(x.value)) x.selected = true;
+            // if (mSelectSelected.includes(x.text)) x.selected = true;
+            // if (mSelectSelected.includes(x.value)) x.selected = true;
           });
 
           // console.log(mSelectAll);
@@ -484,6 +569,11 @@ function createTableBody(table, config, data) {
 }
 
 //#region tableCellEdit
+/**
+ * This is triggered when editable cells get focus.
+ * change the color of a object that is being edited
+ * @param {httpElement} that - element that got focus
+ */
 function tableCellEditStart(that) {
   that.classList.add('editing');
 }
@@ -496,6 +586,12 @@ function tableCellEditCellValidation(that, config) {
   const validationString = config[key]?.validation;
 }
 
+/**
+ * This is triggered when editable cells loses focus.
+ * change the color of a object, will get green if save is sucessful, and red if unsuccesful. In both cases the color will fade out. 
+ * If unsuccesful the value will change back to original value.
+ * @param {httpElement} that - element that lost focus
+ */
 function tableCellEditEnd(that) {
   that.classList.remove('editing');
   const key = that.conf.key;
@@ -539,17 +635,31 @@ function tableCellEditEnd(that) {
 //#endregion tableCellEdit
 
 //#endregion table
-
+/**
+ * 
+ * @param {string} label - What should be the label of the button
+ * @param {string} type - What type of button (bootstrap)
+ * @param {string} functionString - the name of the function to run onClick
+ * @param {variable} value - variable that will be the value of the button, usually string or number
+ * @returns http element button;
+ */
 function uiBtnCreate(label, type, functionString, value) {
   if (!bootstrapButtonColors.includes(type.toLowerCase())) type = 'default';
   if (!value) value = '';
-  const button = oneLineTag('button', { value: value });
+  const button = oneLineTag('button', { 'value': value });
   button.setAttribute('onClick', functionString);
   button.classList.add('btn', 'btn-' + type, 'btn-rounded', 'fullWidth');
   button.appendChild(document.createTextNode(label));
   return button;
 }
 
+/**
+ * Create a dropdown where one thing can be selected
+ * @param {httpElement} attachTo - http element to attach the selectbox
+ * @param {arrayOfObjects} selectOptions - {value: numberToStore, text: shownText}, this is attached directly to http button.
+ * @param {string} APIPatchOnChange - what url patch will be sent to, used in toggleMenu
+ * @returns http element div - the container containing the dropdown.
+ */
 function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
   const container = document.createElement('div');
   attachTo.appendChild(container);
