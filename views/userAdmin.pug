@@ -60,47 +60,7 @@ block content
         content: 'button(Del,danger)'
       }
     };
-    /*
-    window.addEventListener('load', (event) => {
-    const onSuccess = storeDatafunction('allAccess');
-    getData('useraccess', onSuccess , initPage);
-    })
-    
-    function initPage() {
-    // createTable();
-    
-    // let okButtonConfig = {};
-    }
-    
-    let changeId = 0;
-    
-    function changepasswordShow(id) {
-    const changepasswordConfig = {
-    password: {
-    label: 'Password',
-    validation: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/',
-    icon: 'fa-key',
-    addNew: true
-    }
-    };
-    const okButtonConfig = {function: 'changePassword.call(this,' + id + ')', label: 'ChangePassword'};
-    const popup = createPopupInput('ChangePassword', changepasswordConfig, okButtonConfig);
-    document.getElementsByClassName('content-wrapper')[0].appendChild(popup);
-    }
-    
-    function changePassword(id) {
-    const passwordInput = this.parentNode.parentNode.querySelectorAll('#ChangePassword-password')[0];
-    const divModalContent = this.parentNode.parentNode.parentNode.parentNode;
-    let passwd = passwordInput.value;
-    function successFunc() {
-    divModalContent.remove();
-    }
-    function runAfterFunc() {
-    passwordInput.value = '';
-    }
-    patchData(id, { valueToChange: 'password', newValue: passwd }, successFunc, runAfterFunc);
-    }
-    */
+
 
     for (const key of Object.keys(tableConfig)) {
       if (tableConfig[key].label === undefined) tableConfig[key].label = key;
@@ -109,15 +69,6 @@ block content
 
     // get extra data
     let accessData;
-    /*
-    let localStorage2 = 'griffinPortal';
-    function storeDatafunction2(storeDataWhere) {
-      if (window[localStorage2] === undefined) window[localStorage2] = {};
-      return function (data) {
-        window[localStorage2][storeDataWhere] = data;
-      };
-    }
-    */
 
     document.addEventListener('DOMContentLoaded', function () {
       loadfile('/node_modules/list.js/dist/list.min.js');
