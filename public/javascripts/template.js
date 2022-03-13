@@ -6,7 +6,7 @@ const bootstrapButtonColors = ['primary', 'secondary', 'success', 'danger', 'war
 const bootstrapAlertColors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 const bootstrapBGColors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white'];
 
-/** Test if string is correct json 
+/** Test if string is correct json
  *  @param {string} str - string that is checked if it is correct json
  *  @return {boolean}
  */
@@ -42,7 +42,7 @@ function oneLineTag(tag, options = {}, classList = []) {
  * For instance string = 'Hello {Name}, have a god {day} {test}', replaceArray = {Name: 'John', day: 'evening'}
  * should return 'Hello John, have a god evening {test}'
  * @param {string} string - Original string
- * @param {object} replacerObject - {replace: replaceWith} 
+ * @param {object} replacerObject - {replace: replaceWith}
  * @returns {string}
  */
 function replaceText(string, replacerObject) {
@@ -111,8 +111,8 @@ function waitSpinnerShow() {
 // https://stackoverflow.com/questions/10623798/how-do-i-read-the-contents-of-a-node-js-stream-into-a-string-variable
 // streamToString(stream).then(function(response){//Do whatever you want with response});
 /**
- * takes a stream and returns a promise that resolves with the utf8 text once the 
- * @param {stream} stream 
+ * takes a stream and returns a promise that resolves with the utf8 text once the
+ * @param {stream} stream
  * @returns Promise returning utf8 string
  */
 function streamToString(stream) {
@@ -293,7 +293,7 @@ function delData(url, runOnSuccess, runAfter) {
 // Create and return element suitable to be a icon.
 /**
  * Create and return element suitable to be a icon.
- * @param {string} iconClass 
+ * @param {string} iconClass
  * @returns html element
  */
 function createFaIcon(iconClass) {
@@ -352,7 +352,7 @@ function configUpdateFromData(config, data) {
 /**
  * generate the the table using config
  * will fetch 'list' from from the webpages relative path to get data
- * @param {object} config - tableConfig from page 
+ * @param {object} config - tableConfig from page
  */
 
 function createTable(config) {
@@ -409,7 +409,7 @@ function createTable(config) {
     // Need to get rid of the multiselect (and maybe buttons) as new List destroys all eventlisteners
     for (let i = 0; i < optionsArray.length; i++) {
       const key = optionsArray[i];
-      if (/^button\(.*\)/.test(config[key].content) || /^multiselect\(.*\)/.test(config[key].content)) {
+      if (/^button\(.*\)/.test(config[key].content) || /^multiselect\(.*\)/.test(config[key].content) || /^singleselect\(.*\)/.test(config[key].content) ) {
         optionsArray.splice(i, 1);
         i--;
       }
@@ -456,9 +456,9 @@ function createTableHeader(config) {
 }
 
 /**
- * 
+ *
  * @param {httpElementTable} table - the table that body will be appended to
- * @param {object} config - tableConfig from page 
+ * @param {object} config - tableConfig from page
  * @param {object} data - data that will be used to render page
  * @returns {httpElementBody} - returns the body. Already appended to table
  */
@@ -480,12 +480,12 @@ function createTableBody(table, config, data) {
       bodytr.appendChild(td);
       td.conf = tableConfig[key];
       td.classList.add(key);
-      td.addEventListener('keydown', (e) => {
+      /*td.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           simulateTab.call(td);
         }
-      });
+      });*/
       const rowVariables = {};
 
       switch (true) {
@@ -549,7 +549,8 @@ function createTableBody(table, config, data) {
           sSelectOptions.forEach((x) => {
             if (sSelectSelected === x.id) x.selected = true;
           });
-          const ssel = uiSSelCreate(td, sSelectOptions, config[key].api)
+
+          const ssel = uiSSelCreate2(td, sSelectOptions, config[key].api);
           break;
         //const contentArray = config[key].content.match(/\w+\((.*)\)/)[1].split(',');
         //const valueArray = isJson(config[key].value) ? JSON.parse(config[key].value) : [];
@@ -588,7 +589,7 @@ function tableCellEditCellValidation(that, config) {
 
 /**
  * This is triggered when editable cells loses focus.
- * change the color of a object, will get green if save is sucessful, and red if unsuccesful. In both cases the color will fade out. 
+ * change the color of a object, will get green if save is sucessful, and red if unsuccesful. In both cases the color will fade out.
  * If unsuccesful the value will change back to original value.
  * @param {httpElement} that - element that lost focus
  */
@@ -636,7 +637,7 @@ function tableCellEditEnd(that) {
 
 //#endregion table
 /**
- * 
+ *
  * @param {string} label - What should be the label of the button
  * @param {string} type - What type of button (bootstrap)
  * @param {string} functionString - the name of the function to run onClick
@@ -651,6 +652,67 @@ function uiBtnCreate(label, type, functionString, value) {
   button.classList.add('btn', 'btn-' + type, 'btn-rounded', 'fullWidth');
   button.appendChild(document.createTextNode(label));
   return button;
+}
+
+function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
+  const htmlOptions = {};
+  htmlOptions.options = selectoptions.map(x => {
+    return oneLineTag('option', x);
+  })
+
+  const select = oneLineTag('select', {});
+  selectoptions.forEach(x => {
+    const option = document.createElement('option');
+    option.text = x.name;
+    option.value = x.id;
+
+    select.options.add(option);
+  })
+  select.options.selectedIndex = selectoptions.findIndex(x => x.selected)
+  select.lastSuccessfullIndex = select.options.selectedIndex;
+  select.addEventListener('change', event => {
+    const key = attachTo.conf.key;
+    const newData = event.target.value;
+    const oldData = String(attachTo.parentNode.rawdata[key]);
+    const updateData = { valueToChange: key, newValue: newData };
+  
+    const rowId = attachTo.parentNode.rawdata.id;
+
+    attachTo.classList.add('saveProgress');
+
+    patchData(
+      rowId,
+      updateData,
+      () => {
+        success = true;
+      },
+      () => {
+        //attachTo.setAttribute('contenteditable', 'true');
+        attachTo.classList.remove('saveProgress');
+        if (success) {
+          attachTo.classList.add('saveSuccess');
+          attachTo.parentNode.rawdata[key] = newData;
+        } else {
+          attachTo.classList.add('saveFail');
+          select.options.selectedIndex = selectoptions.findIndex(x => x.value === oldData);
+        }
+        setTimeout(() => {
+          attachTo.classList.add('saveDone');
+        }, 50);
+
+        setTimeout(() => {
+          if (attachTo.classList.contains('saveSuccess')) attachTo.classList.remove('saveSuccess');
+          if (attachTo.classList.contains('saveFail')) attachTo.classList.remove('saveFail');
+          if (attachTo.classList.contains('saveDone')) attachTo.classList.remove('saveDone');
+          if (success === false) attachTo.textContent = oldData;
+          if (success === false) select.options.selectedIndex = selectoptions.findIndex(x => x.value === oldData);
+        }, 1000);
+      }
+    );
+  //  console.log(attachTo.parentNode);
+  //  attachTo.conf.key;
+  })
+  attachTo.appendChild(select);
 }
 
 /**
@@ -689,9 +751,8 @@ function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
 
   select.addEventListener('click', function () {
     console.log('select clicked');
-    toggleMenu();
+    //    toggleMenu();
   });
-
   updateSelected();
 
   // if that is defined, switch the selected variable
@@ -711,14 +772,13 @@ function uiSSelCreate(attachTo, selectOptions, APIPatchOnChange) {
     const selected = selectOptions.filter((option) => option.selected);
     const notSelected = selectOptions.filter((option) => !option.selected);
     if (selected.length > 0) {
-      select.innerHTML = selected[0].name;
+      select.textContent = selected[0].name;
     } else {
-      if(notSelected.length > 0) {
-        select.innerHTML = 'Nothing selected'
-      } else { 
-        select.innerHTML = 'Nothing to beselected'
+      if (notSelected.length > 0) {
+        select.textContent = 'Nothing selected';
+      } else {
+        select.textContent = 'Nothing to beselected';
       }
-      
     }
   }
 

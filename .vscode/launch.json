@@ -13,22 +13,44 @@
       "restart": true,
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["public/**", "node_modules/**"],
-      "outFiles": ["bin/**"]
+      "skipFiles": [
+        "public/**",
+        "node_modules/**"
+      ],
+      "outFiles": [
+        "bin/**"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
       "name": "AdminLTE",
       "program": "${workspaceFolder}/bin/www",
-      "skipFiles": ["public/**", "node_modules/**"],
-      "outFiles": ["bin/**"]
+      "skipFiles": [
+        "public/**",
+        "node_modules/**"
+      ],
+      "outFiles": [
+        "bin/**"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
       "name": "test",
       "program": "${workspaceFolder}\\test"
+    },
+    {
+      "type": "pwa-chrome",
+      "name": "localhost:3000",
+      "request": "launch",
+      "url": "localhost:3000"
+    },
+    {
+      "type": "pwa-chrome",
+      "name": "http://localhost:3000",
+      "request": "launch",
+      "url": "http://localhost:3000"
     }
   ]
 }
