@@ -500,19 +500,19 @@ function createTableBody(table, config, data) {
         case /^multiselect\(.*\)/.test(config[key].content):
           // Extract the selected values from string by first convert the text to proper JSON
           // TODO: This should have been JSON in the first place. Test if json, if json don't do the replace thing.
-          if(row[key] === "") row[key] = "[]"
+          if (row[key] === '') row[key] = '[]';
           const mSelectSelected = JSON.parse(row[key].replace(/\[/, '["').replace(/\]/, '"]').replace(/,/g, '","'));
           const mSelectAll = window.griffinPortal[key];
           mSelectAll.forEach((x) => {
-            if(x.name && !x.text) {
+            if (x.name && !x.text) {
               x.text = x.name;
-              delete(x.name)
+              delete x.name;
             }
-            if(x.id && !x.value) {
+            if (x.id && !x.value) {
               x.value = x.id;
-              delete(x.id)
+              delete x.id;
             }
-          })
+          });
           const mSelectOptions = Array.from(JSON.parse(JSON.stringify(mSelectAll)));
           // TODO: Naming should be fixed to be consistent ffs.
           // options: [{text: 'showed text', value: 'value to save', selected: true}
@@ -543,7 +543,7 @@ function createTableBody(table, config, data) {
           // Test is fist row is correct, otherwise treat as no options is available
           if (!Array.isArray(sSelectOptions) || typeof sSelectOptions[0] === 'string') {
             sSelectOptions.length = 0;
-            sSelectOptions.push({"text": "No OptionsAvailable", "value": ""});
+            sSelectOptions.push({ text: 'No OptionsAvailable', value: '' });
           }
 
           sSelectOptions.forEach((x) => {
@@ -646,7 +646,7 @@ function tableCellEditEnd(that) {
 function uiBtnCreate(label, type, functionString, value) {
   if (!bootstrapButtonColors.includes(type.toLowerCase())) type = 'default';
   if (!value) value = '';
-  const button = oneLineTag('button', { 'value': value });
+  const button = oneLineTag('button', { value: value });
   button.setAttribute('onClick', functionString);
   button.classList.add('btn', 'btn-' + type, 'btn-rounded', 'fullWidth');
   button.appendChild(document.createTextNode(label));
@@ -919,7 +919,7 @@ function simulateTab() {
       end = true;
     }
     if (obj && obj.contentEditable === 'true') found = true;
-    if (obj && (obj.tagName === 'INPUT' || obj.tagName === 'TEXTAREA' || obj.tagName === 'A' || obj.tagName === 'AUDIO' || obj.tagName === 'VIDEO' || obj.tagName === 'SELECT' || obj.tagName === 'BUTTON'|| obj.tagName === 'PROGRESS')) found = true;
+    if (obj && (obj.tagName === 'INPUT' || obj.tagName === 'TEXTAREA' || obj.tagName === 'A' || obj.tagName === 'AUDIO' || obj.tagName === 'VIDEO' || obj.tagName === 'SELECT' || obj.tagName === 'BUTTON' || obj.tagName === 'PROGRESS')) found = true;
     if (found) {
       // tab don't stop on hidden objects
       if (obj.style.display === 'none') found = false;
