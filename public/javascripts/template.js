@@ -487,13 +487,15 @@ function createTableBody(table, config, data) {
         }
       });*/
       const rowVariables = {};
+      if (key && config[key]) {
+        if (config[key].function) rowVariables.function = replaceText(config[key].function, row);
+        if (config[key].content) rowVariables.content = replaceText(config[key].content, row);
+        if (config[key].value) rowVariables.value = replaceText(config[key].value, row);
+      }
 
       switch (true) {
         case /^button\(.*\)/.test(config[key].content):
           const contentArray = config[key].content.match(/\w+\((.*)\)/)[1].split(',');
-          if (config[key].function) rowVariables.function = replaceText(config[key].function, row);
-          if (config[key].content) rowVariables.content = replaceText(config[key].content, row);
-          if (config[key].value) rowVariables.value = replaceText(config[key].value, row);
           const button = uiBtnCreate(contentArray[0], contentArray[1], rowVariables.function, rowVariables.value);
           td.appendChild(button);
           break;
