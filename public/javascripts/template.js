@@ -409,7 +409,7 @@ function createTable(config) {
     // Need to get rid of the multiselect (and maybe buttons) as new List destroys all eventlisteners
     for (let i = 0; i < optionsArray.length; i++) {
       const key = optionsArray[i];
-      if (/^button\(.*\)/.test(config[key].content) || /^multiselect\(.*\)/.test(config[key].content) || /^singleselect\(.*\)/.test(config[key].content) ) {
+      if (/^button\(.*\)/.test(config[key].content) || /^multiselect\(.*\)/.test(config[key].content) || /^singleselect\(.*\)/.test(config[key].content)) {
         optionsArray.splice(i, 1);
         i--;
       }
@@ -663,16 +663,16 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
   })
 
   const select = oneLineTag('select', {});
-  selectoptions.forEach(x => {
+  selectoptions.forEach((x) => {
     const option = document.createElement('option');
     option.text = x.name;
     option.value = x.id;
 
     select.options.add(option);
-  })
-  select.options.selectedIndex = selectoptions.findIndex(x => x.selected)
+  });
+  select.options.selectedIndex = selectoptions.findIndex((x) => x.selected);
   select.lastSuccessfullIndex = select.options.selectedIndex;
-  select.addEventListener('change', event => {
+  select.addEventListener('change', (event) => {
     const key = attachTo.conf.key;
     const newData = event.target.value;
     const oldData = String(attachTo.parentNode.rawdata[key]);
@@ -696,7 +696,7 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
           attachTo.parentNode.rawdata[key] = newData;
         } else {
           attachTo.classList.add('saveFail');
-          select.options.selectedIndex = selectoptions.findIndex(x => x.value === oldData);
+          select.options.selectedIndex = selectoptions.findIndex((x) => x.value === oldData);
         }
         setTimeout(() => {
           attachTo.classList.add('saveDone');
@@ -707,13 +707,13 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
           if (attachTo.classList.contains('saveFail')) attachTo.classList.remove('saveFail');
           if (attachTo.classList.contains('saveDone')) attachTo.classList.remove('saveDone');
           if (success === false) attachTo.textContent = oldData;
-          if (success === false) select.options.selectedIndex = selectoptions.findIndex(x => x.value === oldData);
+          if (success === false) select.options.selectedIndex = selectoptions.findIndex((x) => x.value === oldData);
         }, 1000);
       }
     );
   //  console.log(attachTo.parentNode);
   //  attachTo.conf.key;
-  })
+  });
   attachTo.appendChild(select);
 }
 
