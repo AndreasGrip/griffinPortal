@@ -615,7 +615,7 @@ function tableCellEditEnd(that) {
       () => {
         that.setAttribute('contenteditable', 'true');
         that.classList.remove('saveProgress');
-        if (success) {
+        if (typeof success !== 'undefined' && success) {
           that.classList.add('saveSuccess');
           that.parentNode.rawdata[key] = newData;
         } else {
@@ -691,7 +691,7 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
       () => {
         //attachTo.setAttribute('contenteditable', 'true');
         attachTo.classList.remove('saveProgress');
-        if (success) {
+        if (typeof(success) !== 'undefined' && success) {
           attachTo.classList.add('saveSuccess');
           attachTo.parentNode.rawdata[key] = newData;
         } else {
