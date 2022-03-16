@@ -538,19 +538,22 @@ function createTableBody(table, config, data) {
           // console.log(mSelectSelected);
           const msel = uiMSelCreate(td, mSelectOptions, config[key].api);
           break;
-        case /^singleselect\(.*\)/.test(config[key].content):
-          const sSelectSelected = row[key];
-          const sSelectAll = window.griffinPortal[key];
-          const sSelectOptions = Array.from(JSON.parse(JSON.stringify(sSelectAll)));
+        case /^singleselect\(.*\)/.test(rowVariables.content):
+          //const sSelectSelected = row[key];
+          const sSelectSelected = rowVariables.content.match(/\w+\((.*)\)/)[1].split(',')[0];
+          const allKey = rowVariables.content.match(/\w+\((.*)\)/)[1].split(',')[1];
+          const sSelectAll = window.griffinPortal[allKey];
+          const sSelectOptions = sSelectAll ? Array.from(JSON.parse(JSON.stringify(sSelectAll))) : [];
           // Test is fist row is correct, otherwise treat as no options is available
           if (!Array.isArray(sSelectOptions) || typeof sSelectOptions[0] === 'string') {
             sSelectOptions.length = 0;
             sSelectOptions.push({ text: 'No OptionsAvailable', value: '' });
           }
 
-          sSelectOptions.forEach((x) => {
-            if (sSelectSelected === x.id) x.selected = true;
-          });
+          for(let i = 0 ; i < sSelectOptions.length; i++) {
+            if ( typeof sSelectOptions[i] === 'string' || typeof sSelectOptions[i] === 'number') sSelectOptions[i] = { id: sSelectOptions[i], name: sSelectOptions[i] };
+            if (sSelectSelected == sSelectOptions[i].id) sSelectOptions[i].selected = true;
+          }
 
           const ssel = uiSSelCreate2(td, sSelectOptions, config[key].api);
           break;
@@ -657,15 +660,10 @@ function uiBtnCreate(label, type, functionString, value) {
 }
 
 function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
-  const htmlOptions = {};
-  htmlOptions.options = selectoptions.map(x => {
-    return oneLineTag('option', x);
-  })
-
   const select = oneLineTag('select', {});
   selectoptions.forEach((x) => {
     const option = document.createElement('option');
-    option.text = x.name;
+    option.text = x.name ? x.name : x.id;
     option.value = x.id;
 
     select.options.add(option);
@@ -677,7 +675,7 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
     const newData = event.target.value;
     const oldData = String(attachTo.parentNode.rawdata[key]);
     const updateData = { valueToChange: key, newValue: newData };
-  
+
     const rowId = attachTo.parentNode.rawdata.id;
 
     attachTo.classList.add('saveProgress');
@@ -711,8 +709,8 @@ function uiSSelCreate2(attachTo, selectoptions = {}, APIPatchOnChange = '') {
         }, 1000);
       }
     );
-  //  console.log(attachTo.parentNode);
-  //  attachTo.conf.key;
+    //  console.log(attachTo.parentNode);
+    //  attachTo.conf.key;
   });
   attachTo.appendChild(select);
 }
