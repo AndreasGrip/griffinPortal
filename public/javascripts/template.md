@@ -56,8 +56,8 @@ The key in tableConfig is matched to the key in list.
   - button: button(ChangePassword,danger) - The button will have the text 'ChangePassword', and will have the bootstrap type 'danger'. Note that there is no ace.  
     - When a button is pressed, function will be called upon.
   - multiselect: multiselect({access},allAccess).   
-    - {access}: is parsed into already selected items.  
-    - allAccess: is all available options  
+    - {access}: is parsed into already selected items.  ['read','write'] in this example.
+    - allAccess: is all available options parsed from local storage (usually window.griffinPortal[allAccess] in this example)
 - function: changePassword({id}) will run the function changePassword. Will try to replace anything inside {} with according key. In this case changePassword(1)   would be executed.
 - api: path to api to send PATCH to on changes selectbox changes.
 

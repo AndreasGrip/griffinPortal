@@ -4,4 +4,4 @@ Boilerplate for webpage that will handle auth and give a webinterface to start w
 You will be able to create users and select what paths the user will be able to access.
 Middleware will take care of user rights.
 
-Otherwise vanilla Express + EJS.
+Otherwise vanilla Express + pug.

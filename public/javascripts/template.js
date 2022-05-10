@@ -66,14 +66,13 @@ function storeDatafunction(storeDataWhere) {
 
 //#region spinlocker
 
-/** Each thing that loads on the page add 1 to this variable. Is then used to remove spinner when this is 0 and show spinner when above. */
-window.spinnerLockers = 0;
 
 /**
  * Run this command whenever done with a task to hide spinner when no tasks are left
  * Sibling to waitSpinnerShow()
  */
 function waitSpinnerHide() {
+  if(!document.getElementById('spinner')) window.spinnerLockers = 0;
   window.spinnerLockers--;
   if (window.spinnerLockers <= 0) {
     // remove all existing spinners
@@ -81,6 +80,7 @@ function waitSpinnerHide() {
       const spinner = document.getElementById('spinner');
       spinner.remove();
     }
+    window.spinnerLockers = 0;
   }
 }
 
@@ -90,6 +90,7 @@ function waitSpinnerHide() {
  * Sibling to waitSpinnerHide()
  */
 function waitSpinnerShow() {
+  if(!document.getElementById('spinner')) window.spinnerLockers = 0;
   if (window.spinnerLockers === 0) {
     const divMain = document.createElement('div');
     divMain.id = 'spinner';

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>test</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+    <link rel="stylesheet" href="/node_modules/js-datepicker/dist/datepicker.min.css" />
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <input id="apa" />
+
+    <div id="bpa">Empty</div>
+    <script src="/node_modules/js-datepicker/dist/datepicker.min.js"></script>
+    <script>
+      const node = document.getElementById('apa');
+      const picker = datepicker(node, {
+        formatter: (input, date, instance) => {
+          //const value = date.toJSON();
+          const orgDate = new Date(date.toJSON());
+          const newDate = new Date(orgDate - orgDate.getTimezoneOffset() * 6e4).toJSON().split('.')[0];
+          const finalDateString = newDate.split('T')[1] === '00:00:00' ? newDate.split('T')[0] : newDate;
+          const value = finalDateString;
+          //const value = new Date(date.now() - new Date(date.now()).getTimezoneOffset() * 6e4).toISOString();//.split('T')[0]
+
+          input.value = value; // => '1/1/2099'
+        },
+      });
+
+
+    </script>
+  </body>
+</html>

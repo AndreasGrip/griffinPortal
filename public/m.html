@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style type="text/css">
+      .window {
+        /*position: absolute; */
+        background-color: #fff;
+        border: 1px solid #000;
+        padding: 0.2em;
+        width: 10em;
+      }
+      .windowheader {
+        background-color: #99f;
+        text-align: center;
+        padding: 0.2em;
+      }
+      .windowbody {
+        padding: 0.2em;
+      }
+      body {
+        background-color: #777;
+      }
+    </style>
+    <script>
+      function makeDragable(element) {
+        const offsetY = document.getElementById('offsetY');
+        const offsetX = document.getElementById('offsetX');
+
+        element.style.position = 'absolute';
+        let elements = [];
+        // What should be draggable
+        element.querySelectorAll('.draghandle').forEach((elem) => {
+          elements.push(elem);
+        });
+        // if no class draghandle found the entire element is dragable.
+        if (elements.length === 0) {
+          elements.push(element);
+        }
+
+        // Make dragMouseDown happen while mousebutton is pressed.
+        // elem.onmousedown = dragMouseDown;
+        elements.forEach((elem) => {
+          elem.addEventListener('mousedown', dragMouseDown);
+        });
+
+        function dragMouseDown(e) {
+          e.preventDefault();
+
+          // get the mouse cursor position at startup:
+          window.griffin.UX.mouseDownStart = { x: e.clientX, y: e.clientY };
+
+          // figure element that is dragged
+          let elem = e.target;
+          // Move upwards in hierarchy until some element have class 'draggable'
+          while (elem.parentNode && (elem.classList.length === 0 || !elem.classList.contains('draggable'))) {
+            elem = elem.parentNode;
+          }
+          // if draggable object is not found previous loop, elem will be document (top level) and elem.parentNode is null
+          // set elem to trigger element again if that is the case.
+          if (!elem.parentNode) {
+            elem = e.target;
+          }
+
+          window.griffin.UX.draggedElement = elem;
+          if(!window.griffin.UX.draggedElementZIndex) window.griffin.UX.draggedElementZIndex = 1000;
+          else window.griffin.UX.draggedElementZIndex++;
+          window.griffin.UX.draggedElement.style.zIndex = window.griffin.UX.draggedElementZIndex;
+
+
+          window.griffin.UX.draggedElementStart = { x: elem.offsetLeft, y: elem.offsetTop };
+          window.griffin.UX.draggedElementMouseOffset = { x: window.griffin.UX.mouseDownStart.x - window.griffin.UX.draggedElementStart.x, y: window.griffin.UX.mouseDownStart.y - window.griffin.UX.draggedElementStart.y };
+          offsetY.innerHTML = window.griffin.UX.draggedElementMouseOffset.y;
+          offsetX.innerHTML = window.griffin.UX.draggedElementMouseOffset.x;
+          console.log(JSON.stringify(window.griffin.UX));
+          // Make closeDragElement to be triggered when mousebutton in released.
+          document.addEventListener('mouseup', closeDragElement);
+          //document.onmouseup = closeDragElement;
+          // call a function whenever the cursor moves:
+          document.addEventListener('mousemove', elementDrag);
+          //document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+          e.preventDefault();
+          
+          window.griffin.UX.draggedElement.style.top = (e.clientY - window.griffin.UX.draggedElementMouseOffset.y) + 'px';
+          window.griffin.UX.draggedElement.style.left = (e.clientX - window.griffin.UX.draggedElementMouseOffset.x) + 'px';
+        }
+        
+
+        function closeDragElement() {
+          // stop moving when mouse button is released:
+          document.removeEventListener('mouseup', closeDragElement);
+          document.removeEventListener('mousemove', elementDrag);
+          // Remove data about dragged element
+          delete window.griffin.UX.mouseDownStart;
+          delete window.griffin.UX.draggedElement;
+          delete window.griffin.UX.draggedElementStart;
+          delete window.griffin.UX.draggedElementMouseOffset;
+        }
+      }
+
+      // Initialize Griffin enviroment.
+      if (!window.griffin) window.griffin = {};
+      if (!window.griffin.UX) window.griffin.UX = {};
+
+      window.addEventListener('DOMContentLoaded', (event) => {
+        console.log('DOM fully loaded and parsed');
+        const draggableElements = document.querySelectorAll('.draggable');
+        draggableElements.forEach((draggableElement) => makeDragable(draggableElement));
+      });
+    </script>
+  </head>
+  <body>
+    <div>gob</div>
+    <div>
+      gob
+      <div id="window" class="window draggable">
+        <div class="windowheader draghandle">This is header</div>
+        <div class="windowbody">
+          This is the body<br />
+          the real body
+        </div>
+      </div>
+      <div id="window1" class="window draggable">
+        <div class="windowheader draghandle">This is header</div>
+        <div class="windowbody">
+          This is the body<br />
+          the real body
+        </div>
+      </div>
+      <div id="window2" class="window draggable">
+        <div class="windowheader draghandle">This is header</div>
+        <div class="windowbody">
+          This is the body<br />
+          the real body
+        </div>
+      </div>
+
+    </div>
+    <div>offsetY: <span id="offsetY"></span></div>
+    <div>offsetX: <span id="offsetX"></span></div>
+    <div>e.clientY: <span id="clientY"></div>
+    <div>e.clientX: <span id="clientX"></div>
+  </body>
+</html>
