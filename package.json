@@ -1,6 +1,6 @@
 {
   "name": "griffin-portal-template",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "scripts": {
     "instal": "npm install && npm --prefix ./public/ install",
